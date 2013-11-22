@@ -25,6 +25,12 @@ struct Mesh
 	// current vertex positions after animation
 	std::vector< Vector3f > currentVertices;
 
+	// current vertex normals
+	std::vector< Vector3f > vertexNormals;
+
+	// current texture coordinates 
+	std::vector< Vector2f > textureCoords;
+
 	// current vertex colors 
 	std::vector< Vector3f > vertexColors;
 
@@ -35,6 +41,9 @@ struct Mesh
 
 	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
 	void load(const char *filename);
+
+	// compute the normals if they are not given in the object file
+	void compute_norm();
 
 	// 2.1.2. draw the current mesh.
 	void draw();

@@ -1,4 +1,6 @@
 #include "Mesh.h"
+#define SMOOTH (true)
+
 
 using namespace std;
 
@@ -56,7 +58,16 @@ void Mesh::load( const char* filename )
             unsigned d = atoi(f2[0].c_str());
             unsigned g = atoi(f3[0].c_str());
             faces.push_back(Tuple3u(a, d, g));
-        } else {
+        } else if (s == "vn") {// normals
+			vertexNormals.push_back(Vector3f(0,0,0));
+			Vector3f& curr = vertexNormals.back();
+			ss >> curr[0] >> curr[1] >> curr[2];
+		} else if (s == "vt") {
+			Vector2f texcoord;
+			ss>>texcoord[0];
+			ss>>texcoord[1];
+			textureCoords.push_back(texcoord);
+		} else {
             // ignore remaining tokens
         }
     } 
@@ -66,6 +77,43 @@ void Mesh::load( const char* filename )
 
 	// make a copy of the bind vertices as the current vertices
 	currentVertices = bindVertices;
+
+	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
+
+	}
+}
+
+void Mesh::compute_norm()
+{
+	
+	vector<Vector3f> v = currentVertices;
+	vector<Tuple3u> t = faces;
+	vector<Vector3f> n;
+
+	if (SMOOTH){
+		n.resize(v.size());
+		for(unsigned int ii=0; ii<t.size(); ii++) {
+			Vector3f a = v[t[ii][1]] - v[t[ii][0]];
+			Vector3f b = v[t[ii][2]] - v[t[ii][0]];
+			b=Vector3f::cross(a,b);
+			for(int jj=0; jj<3; jj++) {
+				n[t[ii][jj]]+=b;
+			}
+		}
+		for(unsigned int ii=0; ii<v.size(); ii++) {
+			n[ii] = n[ii]/ n[ii].abs();
+		}
+	}else{
+		n.resize(t.size());
+		for(unsigned int ii=0; ii<t.size(); ii++) {
+			Vector3f a = v[t[ii][1]] - v[t[ii][0]];
+			Vector3f b = v[t[ii][2]] - v[t[ii][0]];
+			b=Vector3f::cross(a,b);
+		  n[ii]=b.normalized();
+		}
+
+	}
+	vertexNormals = n;
 }
 
 void Mesh::draw()
