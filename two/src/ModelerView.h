@@ -38,6 +38,8 @@ public:
 
 	bool m_drawAxes;
 	bool m_drawSkeleton;		// if false, the mesh is drawn instead.
+
+	Mesh m_mesh;
 };
 
 

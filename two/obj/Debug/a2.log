@@ -1,0 +1,30 @@
+﻿Build started 11/24/2013 2:52:38 PM.
+     1>Project "C:\Users\Kaiying Liao\Documents\GitHub\6.837-Final-Project\two\a2.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Ivecmath\include /Iinclude /ZI /nologo /W3 /WX- /Od /Oy- /D _DEBUG /D DEBUG /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"obj\Debug\\" /Fd"obj\Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt src\ModelerView.cpp src\SkeletalModel.cpp /D WIN32 
+         SkeletalModel.cpp
+     1>c:\users\kaiying liao\documents\github\6.837-final-project\two\src\skeletalmodel.cpp(155): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\kaiying liao\documents\github\6.837-final-project\two\src\skeletalmodel.cpp(155): warning C4305: 'argument' : truncation from 'double' to 'float'
+         ModelerView.cpp
+         Generating Code...
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"debug\a2.exe" /INCREMENTAL /NOLOGO /LIBPATH:lib freeglut.lib fltk.lib fltkgl.lib fltkforms.lib fltkimages.lib fltkzlib.lib fltkjpeg.lib fltkpng.lib debug\vecmath.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"obj\Debug\a2.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Kaiying Liao\Documents\GitHub\6.837-Final-Project\two\debug\a2.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /ENTRY:"mainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"debug\a2.lib" /MACHINE:X86 obj\Debug\a2.exe.embed.manifest.res
+         obj\Debug\bitmap.obj
+         obj\Debug\camera.obj
+         obj\Debug\Joint.obj
+         obj\Debug\main.obj
+         obj\Debug\MatrixStack.obj
+         obj\Debug\Mesh.obj
+         obj\Debug\modelerapp.obj
+         obj\Debug\modelerui.obj
+         obj\Debug\ModelerView.obj
+         obj\Debug\SkeletalModel.obj
+       Manifest:
+         c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"obj\Debug\a2.exe.embed.manifest" /manifest obj\Debug\a2.exe.intermediate.manifest
+       LinkEmbedManifest:
+         a2.vcxproj -> C:\Users\Kaiying Liao\Documents\GitHub\6.837-Final-Project\two\debug\a2.exe
+     1>Done Building Project "C:\Users\Kaiying Liao\Documents\GitHub\6.837-Final-Project\two\a2.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.99

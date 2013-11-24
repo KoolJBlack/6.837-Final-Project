@@ -23,6 +23,7 @@ ModelerView::ModelerView(int x, int y, int w, int h,
 
 	m_drawAxes = true;
 	m_drawSkeleton = true;
+
 }
 
 // If you want to load files, etc, do that here.
@@ -36,7 +37,9 @@ void ModelerView::loadModel(int argc, char* argv[])
 	string meshFile = prefix + ".obj";
 	string attachmentsFile = prefix + ".attach";
 
-	model.load(skeletonFile.c_str(), meshFile.c_str(), attachmentsFile.c_str());
+	//TODO: we only want to load meshes, so get rid of the skeleton...
+	//model.load(skeletonFile.c_str(), meshFile.c_str(), attachmentsFile.c_str());
+	m_mesh.load(meshFile.c_str());
 }
 
 ModelerView::~ModelerView()
@@ -112,14 +115,16 @@ int ModelerView::handle( int event )
 
 void ModelerView::update()
 {
+
+	// Kai commented all of this out...
 	// update the skeleton from sliders
-	updateJoints();
+	//updateJoints();
 
 	// Update the bone to world transforms for SSD.
-	model.updateCurrentJointToWorldTransforms();
+	//model.updateCurrentJointToWorldTransforms();
 
 	// update the mesh given the new skeleton
-	model.updateMesh();
+	//model.updateMesh();
 }
 
 void ModelerView::updateJoints()
@@ -189,7 +194,8 @@ void ModelerView::draw()
     	drawAxes();
     }
 
-    model.draw( m_camera->viewMatrix(), m_drawSkeleton );
+    //model.draw( m_camera->viewMatrix(), m_drawSkeleton );
+	m_mesh.draw();
 }
 
 void ModelerView::drawAxes()
