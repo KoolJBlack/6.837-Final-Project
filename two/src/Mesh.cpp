@@ -72,8 +72,9 @@ void Mesh::load( const char* filename )
         }
     } 
     // end while cin
-    cerr << endl << "bindVertices size " << bindVertices.size() << endl;
-    cerr << endl << "faces size " << faces.size() << endl;
+    cerr << "bindVertices size " << bindVertices.size() << endl;
+    cerr << "faces size " << faces.size() << endl;
+    cerr << "normals size " << vertexNormals.size() << endl;
 
 	// make a copy of the bind vertices as the current vertices
 	currentVertices = bindVertices;
