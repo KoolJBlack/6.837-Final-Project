@@ -149,7 +149,6 @@ void Mesh::draw()
         glNormal3d(n[0], n[1], n[2]);
         glVertex3d(v3[0], v3[1], v3[2]);
         glEnd();
-
         //glEnable (GL_LIGHTING);
 
     }
