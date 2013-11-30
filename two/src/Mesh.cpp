@@ -48,16 +48,38 @@ void Mesh::load_mesh( const char* filename )
             // Set the default color
             vertexColors.push_back(Vector3f(1.0,1.0,1.0));
         } else if (s == "f") {
-            vector<Vector3f> face;
+            vector<Tuple3u> face;
             string abc, def,ghi;
             ss >> abc >> def >> ghi;
+            // Parse face 1
             vector<string> f1 = split(abc, '/');
+            unsigned a, b, c;
+            a = atoi(f1[0].c_str());
+            b = atoi(f1[1].c_str());
+            if (f1.size() >2) {
+                c = atoi(f1[2].c_str());
+            }
+            face.push_back(Tuple3u(a, b, c));
+            // Parse face 2
             vector<string> f2 = split(def, '/');
+            unsigned d, e, f;
+            d = atoi(f2[0].c_str());
+            e = atoi(f2[1].c_str());
+            if (f2.size() > 2) {
+                f = atoi(f2[2].c_str());
+            }
+            face.push_back(Tuple3u(d, e, f));
+            // Parse face 3
             vector<string> f3 = split(ghi, '/');
-            unsigned a = atoi(f1[0].c_str());
-            unsigned d = atoi(f2[0].c_str());
-            unsigned g = atoi(f3[0].c_str());
-            faces.push_back(Tuple3u(a, d, g));
+            unsigned g, h, i;
+            g = atoi(f3[0].c_str());
+            h = atoi(f3[1].c_str());
+            if (f3.size() > 2) {
+                i = atoi(f3[2].c_str());
+            }
+            face.push_back(Tuple3u(g, h, i));
+            // Add faces to fector
+            faces.push_back(face);
         } else if (s == "vn") {// normals
 			vertexNormals.push_back(Vector3f(0,0,0));
 			Vector3f& curr = vertexNormals.back();
@@ -83,8 +105,6 @@ void Mesh::load_mesh( const char* filename )
 	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
 
 	}
-
-    // Load the texture if possible
 
 }
 
@@ -116,6 +136,7 @@ void Mesh::init_text() {
 }
 
 
+/*
 void Mesh::compute_norm()
 {
 	
@@ -148,9 +169,11 @@ void Mesh::compute_norm()
 	}
 	vertexNormals = n;
 }
+*/
 
 void Mesh::draw() {
     // Init the texture if it hasn't been done yet
+    // This is a hack because texture loading can only be done after the window is created
     if (t.valid() && !m_texture_init) {
         init_text();
     } 
@@ -169,15 +192,17 @@ void Mesh::draw() {
 
 	// Iterate through all of the faces. Draw complete mesh.
     for(unsigned int index=0; index < faces.size(); index++) {
-        Tuple3u face = faces[index];
+        vector<Tuple3u> face = faces[index];
         // Read verticies
-        Vector3f v1 = currentVertices[face[0] - 1];
-        Vector3f v2 = currentVertices[face[1] - 1];
-        Vector3f v3 = currentVertices[face[2] - 1];
+        Vector3f v1 = currentVertices[face[0][0] - 1];
+        Vector3f v2 = currentVertices[face[1][0] - 1];
+        Vector3f v3 = currentVertices[face[2][0] - 1];
         // Read colors
-        Vector3f c1 = vertexColors[face[0] - 1];
-        Vector3f c2 = vertexColors[face[1] - 1];
-        Vector3f c3 = vertexColors[face[2] - 1];
+        Vector3f c1 = vertexColors[face[0][0] - 1];
+        Vector3f c2 = vertexColors[face[1][0] - 1];
+        Vector3f c3 = vertexColors[face[2][0] - 1];
+        // Read texture coordinates
+        
         // Calculate normal
         Vector3f n = Vector3f::cross(v2 - v1, v3 - v1).normalized();
 
@@ -186,13 +211,10 @@ void Mesh::draw() {
             //glDisable (GL_LIGHTING);
             glEnable(GL_COLOR_MATERIAL);
             glBegin(GL_TRIANGLES);
-            glColor3fv(c1);
             glNormal3fv(n);
             glVertex3fv(v1);
-            glColor3fv(c2);
             glNormal3fv(n);
             glVertex3fv(v2);
-            glColor3fv(c3);
             glNormal3fv(n);
             glVertex3fv(v3);
             glEnd();

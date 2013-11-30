@@ -20,7 +20,7 @@ struct Mesh {
 
 	// each face has 3 indices
 	// referencing 3 vertices
-	std::vector< Tuple3u > faces;
+	std::vector<std::vector<Tuple3u>> faces;
 
 	// current vertex positions after animation
 	std::vector< Vector3f > currentVertices;
