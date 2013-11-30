@@ -96,7 +96,7 @@ struct Mesh {
 	void load_mesh(const char *filename);
 
 	// helper function to load multiple shapes
-	void load_shape(const char *filename, vector<Vector3f>& vertices, vector<Tuple3u>& faces, vector<Vector3f>& normals);
+	void load_shape(const char *filename, std::vector<Vector3f>& vertices, std::vector<Tuple3u>& faces, std::vector<Vector3f>& normals);
 	
 	// Texture loading functions
 	void load_text(const char *filename);
