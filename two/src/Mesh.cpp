@@ -20,7 +20,7 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
-void Mesh::load( const char* filename )
+void Mesh::load_mesh( const char* filename )
 {
 	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
 
@@ -83,6 +83,13 @@ void Mesh::load( const char* filename )
 	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
 
 	}
+
+    // Load the texture if possible
+
+}
+
+void Mesh::load_text(const char* filename ) {
+
 }
 
 void Mesh::compute_norm()

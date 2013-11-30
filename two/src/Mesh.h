@@ -41,7 +41,8 @@ struct Mesh
 	std::vector< std::vector< float > > attachments;
 
 	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
-	void load(const char *filename);
+	void load_mesh(const char *filename);
+	void load_text(const char *filename);
 
 	// compute the normals if they are not given in the object file
 	void compute_norm();

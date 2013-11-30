@@ -264,7 +264,6 @@ public:
 
    int width(){return width_;}
    int height(){return height_;}
-
   
 private:
 
@@ -336,7 +335,7 @@ private:
 
    bool           valid_;
    std::string    file_name_;
-   unsigned char* data_;
+   unsigned char* data_; // Internal data format
    unsigned int   bytes_per_pixel_;
    unsigned int   length_;
    unsigned int   width_;

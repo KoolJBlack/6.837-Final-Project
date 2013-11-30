@@ -14,7 +14,7 @@ void SkeletalModel::load(const char *skeletonFile, const char *meshFile, const c
 {
 	loadSkeleton(skeletonFile);
 
-	m_mesh.load(meshFile);
+	m_mesh.load_mesh(meshFile);
 	m_mesh.loadAttachments(attachmentsFile, m_joints.size());
 
 	computeBindWorldToJointTransforms();
