@@ -16,6 +16,10 @@ int Texture::getHeight() {
     return height;
 }
 
+bitmap_image* Texture::getImg() {
+    return bimg;
+}
+
 const unsigned char*  Texture::getData() {
     return bimg->data();
 }

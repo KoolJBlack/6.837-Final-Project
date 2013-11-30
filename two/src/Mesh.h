@@ -61,6 +61,10 @@ struct Mesh {
 	bool m_texture_init;
 	// GL texture info
   	GLuint textureID;
+  	// Debug
+    int checkImageWidth = 64;
+	int checkImageHeight = 64;
+	GLubyte checkImage[64][64][4];
 };
 
 #endif

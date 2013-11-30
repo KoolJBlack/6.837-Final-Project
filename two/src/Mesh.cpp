@@ -118,18 +118,58 @@ void Mesh::init_text() {
     // Create one OpenGL texture
     glGenTextures(1, &textureID);
 
-    // "Bind" the newly created texture : all future texture functions will modify this texture
+    // "Bind" the newly created texture : all futuhre texture functions will modify this texture
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     // Nice trilinear filtering.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering
+    
+    // Creat the GL texture data
+    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    bitmap_image * bimg = t.getImg();
+    int w = t.getWidth();
+    int h = t.getHeight();
+    GLubyte image[h][w][3];
+    unsigned char red, green, blue;
+    for (int i = 0; i < h; i++) {
+        for (int j = 0; j < w; j++) {
+            bimg->get_pixel(j, i,red, green, blue );
+            image[i][j][0] = (GLubyte) red;
+            image[i][j][1] = (GLubyte) green;
+            image[i][j][2] = (GLubyte) blue;
+        }
+    }
 
+    // Set the GL texture
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, 
+                 h, 0, GL_RGB, GL_UNSIGNED_BYTE, 
+                 image); 
+    /*
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
                  t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
                  t.getData());
+    */
+
+    /*
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    int i, j, c;
+    for (i = 0; i < 64; i++) {
+      for (j = 0; j < 64; j++) {
+         c = ((((i&0x8)==0)^((j&0x8))==0))*255;
+         checkImage[i][j][0] = (GLubyte) c;
+         checkImage[i][j][1] = (GLubyte) c;
+         checkImage[i][j][2] = (GLubyte) c;
+         checkImage[i][j][3] = (GLubyte) 255;
+      }
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 
+                64, 0, GL_RGBA, GL_UNSIGNED_BYTE, 
+                checkImage);
+    */
 
     m_texture_init = true;
     cerr << "texture initialized " << endl;
@@ -184,7 +224,7 @@ void Mesh::draw() {
 	// assignment 1, the appearance is "faceted".
 
     // Enable texturing
-    if (t.valid()) {
+    if (m_texture_init) {
         glEnable(GL_TEXTURE_2D);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
         glBindTexture(GL_TEXTURE_2D, textureID);
@@ -201,21 +241,35 @@ void Mesh::draw() {
         Vector3f c1 = vertexColors[face[0][0] - 1];
         Vector3f c2 = vertexColors[face[1][0] - 1];
         Vector3f c3 = vertexColors[face[2][0] - 1];
-        // Read texture coordinates
-        
         // Calculate normal
         Vector3f n = Vector3f::cross(v2 - v1, v3 - v1).normalized();
 
         // Draw with or without texturing
         if (m_texture_init) {
+            // Read texture coordinates
+            Vector2f t1 = textureCoords[face[0][1] - 1]; 
+            Vector2f t2 = textureCoords[face[1][1] - 1]; 
+            Vector2f t3 = textureCoords[face[2][1] - 1]; 
+            //cerr << "texcoord1 " <<t1[0] << " " << t1[1] << endl;
+            //cerr << "texcoord2 " <<t2[0] << " " << t2[1] << endl;
+            //cerr << "texcoord3 " <<t3[0] << " " << t3[1] << endl;
+
             //glDisable (GL_LIGHTING);
-            glEnable(GL_COLOR_MATERIAL);
             glBegin(GL_TRIANGLES);
+            // Vertex 1
             glNormal3fv(n);
+            glTexCoord2fv(t1);
+            //glTexCoord2f(0.0,0.0);
             glVertex3fv(v1);
+            // Vertex 2
             glNormal3fv(n);
+            glTexCoord2fv(t2);
+            //glTexCoord2f(0.0,1.0);
             glVertex3fv(v2);
+            // Vertext 3
             glNormal3fv(n);
+            glTexCoord2fv(t3);
+            //glTexCoord2f(1.0,0.0);
             glVertex3fv(v3);
             glEnd();
             //glEnable (GL_LIGHTING);
@@ -238,7 +292,7 @@ void Mesh::draw() {
     }
 
     // Disable Texturing
-    if (t.valid()) {
+    if (m_texture_init) {
         glDisable(GL_TEXTURE_2D);
     }
 

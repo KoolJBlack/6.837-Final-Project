@@ -12,6 +12,7 @@ public:
   void load(const char * filename);
   int getWidth();
   int getHeight();
+  bitmap_image * getImg();
   const unsigned char*  getData();
   void operator()(int x, int y,  unsigned char * color);
   ///@param x assumed to be between 0 and 1
