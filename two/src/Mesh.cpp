@@ -89,8 +89,32 @@ void Mesh::load_mesh( const char* filename )
 }
 
 void Mesh::load_text(const char* filename ) {
-
+    t.load(filename);
+    cerr << "texture width " << t.getWidth() << " height " << t.getHeight() << endl;
+    m_texture_init = false;
 }
+
+void Mesh::init_text() {
+    // Create one OpenGL texture
+    glGenTextures(1, &textureID);
+
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Nice trilinear filtering.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
+                 t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
+                 t.getData());
+
+    m_texture_init = true;
+    cerr << "texture initialized " << endl;
+}
+
 
 void Mesh::compute_norm()
 {
@@ -125,41 +149,64 @@ void Mesh::compute_norm()
 	vertexNormals = n;
 }
 
-void Mesh::draw()
-{
+void Mesh::draw() {
+    // Init the texture if it hasn't been done yet
+    if (t.valid() && !m_texture_init) {
+        init_text();
+    } 
 	// Since these meshes don't have normals
 	// be sure to generate a normal per triangle.
 	// Notice that since we have per-triangle normals
 	// rather than the analytical normals from
 	// assignment 1, the appearance is "faceted".
 
+    // Enable texturing
+    if (t.valid()) {
+        glEnable(GL_TEXTURE_2D);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+    }
+
 	// Iterate through all of the faces. Draw complete mesh.
     for(unsigned int index=0; index < faces.size(); index++) {
         Tuple3u face = faces[index];
+        // Read verticies
         Vector3f v1 = currentVertices[face[0] - 1];
         Vector3f v2 = currentVertices[face[1] - 1];
         Vector3f v3 = currentVertices[face[2] - 1];
+        // Read colors
         Vector3f c1 = vertexColors[face[0] - 1];
         Vector3f c2 = vertexColors[face[1] - 1];
         Vector3f c3 = vertexColors[face[2] - 1];
+        // Calculate normal
         Vector3f n = Vector3f::cross(v2 - v1, v3 - v1).normalized();
 
-        //glDisable (GL_LIGHTING);
-        glEnable(GL_COLOR_MATERIAL);
-        glBegin(GL_TRIANGLES);
-        glColor3fv(c1);
-        glNormal3d(n[0], n[1], n[2]);
-        glVertex3d(v1[0], v1[1], v1[2]);
-        glColor3fv(c2);
-        glNormal3d(n[0], n[1], n[2]);
-        glVertex3d(v2[0], v2[1], v2[2]);
-        glColor3fv(c3);
-        glNormal3d(n[0], n[1], n[2]);
-        glVertex3d(v3[0], v3[1], v3[2]);
-        glEnd();
-        //glEnable (GL_LIGHTING);
+        // Draw with or without texturing
+        if (m_texture_init) {
 
+        } else {
+            //glDisable (GL_LIGHTING);
+            glEnable(GL_COLOR_MATERIAL);
+            glBegin(GL_TRIANGLES);
+            glColor3fv(c1);
+            glNormal3fv(n);
+            glVertex3fv(v1);
+            glColor3fv(c2);
+            glNormal3fv(n);
+            glVertex3fv(v2);
+            glColor3fv(c3);
+            glNormal3fv(n);
+            glVertex3fv(v3);
+            glEnd();
+            //glEnable (GL_LIGHTING);
+        }
     }
+
+    // Disable Texturing
+    if (t.valid()) {
+        glDisable(GL_TEXTURE_2D);
+    }
+
 
 }
 

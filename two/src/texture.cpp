@@ -1,11 +1,23 @@
 #include "texture.h"
 #include "bitmap_image.h"
-void
-    Texture::load(const char * filename)
-{
+void Texture::load(const char * filename){
     bimg=new bitmap_image(filename);
     height = bimg->height();
     width = bimg->width();
+}
+
+
+
+int Texture::getWidth() {
+    return width;
+}
+
+int Texture::getHeight() {
+    return height;
+}
+
+const unsigned char*  Texture::getData() {
+    return bimg->data();
 }
 
 void
