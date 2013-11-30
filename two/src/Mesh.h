@@ -9,6 +9,7 @@
 #include <sstream>
 #include "extra.h"
 #include "tuple.h"
+#include "Texture.h"
 
 typedef tuple< unsigned, 3 > Tuple3u;
 
@@ -51,6 +52,9 @@ struct Mesh
 	// 2.2. Implement this method to load the per-vertex attachment weights
 	// this method should update m_mesh.attachments
 	void loadAttachments( const char* filename, int numJoints );
+
+	// Texture elements
+	Texture t;
 };
 
 #endif

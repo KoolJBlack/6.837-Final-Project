@@ -78,6 +78,7 @@ OBJECTS := \
 	$(OBJDIR)/modelerui.o \
 	$(OBJDIR)/ModelerView.o \
 	$(OBJDIR)/SkeletalModel.o \
+	$(OBJDIR)/texture.o \
 
 RESOURCES := \
 
@@ -166,6 +167,9 @@ $(OBJDIR)/ModelerView.o: src/ModelerView.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/SkeletalModel.o: src/SkeletalModel.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/texture.o: src/texture.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 

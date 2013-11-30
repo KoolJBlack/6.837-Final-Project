@@ -73,6 +73,7 @@ void Mesh::load( const char* filename )
     } 
     // end while cin
     cerr << "bindVertices size " << bindVertices.size() << endl;
+    cerr << "textCoords size " << textureCoords.size() << endl;
     cerr << "faces size " << faces.size() << endl;
     cerr << "normals size " << vertexNormals.size() << endl;
 
