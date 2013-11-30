@@ -88,6 +88,7 @@ void Mesh::load_mesh( const char* filename )
 			Vector2f texcoord;
 			ss>>texcoord[0];
 			ss>>texcoord[1];
+            texcoord[1] = 1.0-texcoord[1];
 			textureCoords.push_back(texcoord);
 		} else {
             // ignore remaining tokens
