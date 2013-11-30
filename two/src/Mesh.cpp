@@ -183,7 +183,20 @@ void Mesh::draw() {
 
         // Draw with or without texturing
         if (m_texture_init) {
-
+            //glDisable (GL_LIGHTING);
+            glEnable(GL_COLOR_MATERIAL);
+            glBegin(GL_TRIANGLES);
+            glColor3fv(c1);
+            glNormal3fv(n);
+            glVertex3fv(v1);
+            glColor3fv(c2);
+            glNormal3fv(n);
+            glVertex3fv(v2);
+            glColor3fv(c3);
+            glNormal3fv(n);
+            glVertex3fv(v3);
+            glEnd();
+            //glEnable (GL_LIGHTING);
         } else {
             //glDisable (GL_LIGHTING);
             glEnable(GL_COLOR_MATERIAL);
