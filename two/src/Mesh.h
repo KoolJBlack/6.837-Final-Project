@@ -28,6 +28,59 @@ struct Mesh {
 	// current vertex normals
 	std::vector< Vector3f > vertexNormals;
 
+
+	// Need vertices for every blend shape pose
+
+	// HeadShape = neutral face
+	std::vector< Vector3f > HeadVertices;
+	std::vector< Tuple3u > HeadFaces;
+	std::vector< Vector3f > HeadNormals;
+
+	// FrownShape
+	std::vector< Vector3f > RFrownVertices;
+	std::vector< Tuple3u > RFrownFaces;
+	std::vector< Vector3f > RFrownNormals;
+
+	std::vector< Vector3f > LFrownVertices;
+	std::vector< Tuple3u > LFrownFaces;
+	std::vector< Vector3f > LFrownNormals;
+
+	// EyebrowUp
+	std::vector< Vector3f > REyebrowUpVertices;
+	std::vector< Tuple3u > REyebrowUpFaces;
+	std::vector< Vector3f > REyebrowUpNormals;
+
+	std::vector< Vector3f > LEyebrowUpVertices;
+	std::vector< Tuple3u > LEyebrowUpFaces;
+	std::vector< Vector3f > LEyebrowUpNormals;
+
+	// EyebrowDown
+	std::vector< Vector3f > REyebrowDownVertices;
+	std::vector< Tuple3u > REyebrowDownFaces;
+	std::vector< Vector3f > REyebrowDownNormals;
+
+	std::vector< Vector3f > LEyebrowDownVertices;
+	std::vector< Tuple3u > LEyebrowDownFaces;
+	std::vector< Vector3f > LEyebrowDownNormals;
+
+	// Smile
+	std::vector< Vector3f > RSmileVertices;
+	std::vector< Tuple3u > RSmileFaces;
+	std::vector< Vector3f > RSmileNormals;
+
+	std::vector< Vector3f > LSmileVertices;
+	std::vector< Tuple3u > LSmileFaces;
+	std::vector< Vector3f > LSmileNormals;
+
+	// EyeClose
+	std::vector< Vector3f > REyeCloseVertices;
+	std::vector< Tuple3u > REyeCloseFaces;
+	std::vector< Vector3f > REyeCloseNormals;
+
+	std::vector< Vector3f > LEyeCloseVertices;
+	std::vector< Tuple3u > LEyeCloseFaces;
+	std::vector< Vector3f > LEyeCloseNormals;
+
 	// current texture coordinates 
 	std::vector< Vector2f > textureCoords;
 
@@ -41,6 +94,9 @@ struct Mesh {
 
 	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
 	void load_mesh(const char *filename);
+
+	// helper function to load multiple shapes
+	void load_shape(const char *filename, vector<Vector3f>& vertices, vector<Tuple3u>& faces, vector<Vector3f>& normals);
 	
 	// Texture loading functions
 	void load_text(const char *filename);

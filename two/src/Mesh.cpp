@@ -88,6 +88,70 @@ void Mesh::load_mesh( const char* filename )
 
 }
 
+// helper function to load all of the blend shapes initially 
+void Mesh::load_shape(const char *filename, vector<Vector3f>& vertices, vector<Tuple3u>& faces, vector<Vector3f>& normals) {
+
+	// Add your code here.
+	ifstream in(filename);
+    if (!in) {
+        cerr<< filename << " not found\a" << endl;
+        exit(0);
+    }
+
+    cerr << endl << "*** Mesh::load reading in file " << filename << " ***" << endl;
+
+    // load the OBJ file here
+    string line;
+    while (std::getline(in, line)) {
+        // Parse line values through string stream.
+        stringstream ss(line);
+        string s;
+        ss >> s; 
+
+        if (s == "v") {
+            Vector3f v;
+            ss >> v[0] >> v[1] >> v[2];
+            vertices.push_back(v);
+            // Set the default color
+            vertexColors.push_back(Vector3f(1.0,1.0,1.0));
+        } else if (s == "f") {
+            string abc, def,ghi;
+            ss >> abc >> def >> ghi;
+            vector<string> f1 = split(abc, '/');
+            vector<string> f2 = split(def, '/');
+            vector<string> f3 = split(ghi, '/');
+            unsigned a = atoi(f1[0].c_str());
+            unsigned d = atoi(f2[0].c_str());
+            unsigned g = atoi(f3[0].c_str());
+            faces.push_back(Tuple3u(a, d, g));
+        } else if (s == "vn") {// normals
+			Vector3f& curr = Vector3f(0,0,0);
+			ss >> curr[0] >> curr[1] >> curr[2];
+			normals.push_back(curr);
+		} 
+		
+		// TODO: deal with texture coordinates later. might need to be done, or just get rid of this
+		/*else if (s == "vt") {
+			Vector2f texcoord;
+			ss>>texcoord[0];
+			ss>>texcoord[1];
+			textureCoords.push_back(texcoord);
+		} */
+		
+		else {
+            // ignore remaining tokens
+        }
+    } 
+    // end while cin
+
+	// make a copy of the bind vertices as the current vertices
+	currentVertices = bindVertices;
+
+	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
+
+	}
+}
+
 void Mesh::load_text(const char* filename ) {
     t.load(filename);
     cerr << "texture width " << t.getWidth() << " height " << t.getHeight() << endl;
