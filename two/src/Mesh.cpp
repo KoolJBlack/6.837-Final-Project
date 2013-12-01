@@ -118,24 +118,14 @@ void Mesh::init_text() {
     
     // Creat the GL texture data
     //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    bitmap_image * bimg = t.getImg();
-    int w = t.getWidth();
-    int h = t.getHeight();
-    GLubyte image[h][w][3];
-    unsigned char red, green, blue;
-    for (int i = 0; i < h; i++) {
-        for (int j = 0; j < w; j++) {
-            bimg->get_pixel(j, i,red, green, blue );
-            image[i][j][0] = (GLubyte) red;
-            image[i][j][1] = (GLubyte) green;
-            image[i][j][2] = (GLubyte) blue;
-        }
-    }
 
     // Set the GL texture
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, 
-                 h, 0, GL_RGB, GL_UNSIGNED_BYTE, 
+    GLubyte* image = t.getGLTexture();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
+                 t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
                  image); 
+    delete [] image;
+
     /*
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
                  t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 

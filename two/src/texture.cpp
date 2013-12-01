@@ -6,8 +6,6 @@ void Texture::load(const char * filename){
     width = bimg->width();
 }
 
-
-
 int Texture::getWidth() {
     return width;
 }
@@ -15,6 +13,24 @@ int Texture::getWidth() {
 int Texture::getHeight() {
     return height;
 }
+
+
+GLubyte* Texture::getGLTexture() {
+    int w = getWidth();
+    int h = getHeight();
+    GLubyte* image =  new GLubyte[h * w * 3];
+    unsigned char red, green, blue;
+    for (int i = 0; i < h; i++) {
+        for (int j = 0; j < w; j++) {
+            bimg->get_pixel(j, i,red, green, blue );
+            image[i * w * 3+ j * 3 + 0] = (GLubyte) red;
+            image[i * w * 3+ j * 3 + 1] = (GLubyte) green;
+            image[i * w * 3+ j * 3 + 2] = (GLubyte) blue;
+        }
+    }
+    return image;
+}
+
 
 bitmap_image* Texture::getImg() {
     return bimg;
