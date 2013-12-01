@@ -10,6 +10,7 @@
 #include "extra.h"
 #include "tuple.h"
 #include "Texture.h"
+#include "BlendShape.h"
 
 typedef tuple< unsigned, 3 > Tuple3u;
 
@@ -30,56 +31,30 @@ struct Mesh {
 
 
 	// Need vertices for every blend shape pose
-
+	
 	// HeadShape = neutral face
-	std::vector< Vector3f > HeadVertices;
-	std::vector< Tuple3u > HeadFaces;
-	std::vector< Vector3f > HeadNormals;
+	BlendShape HeadShape;
 
 	// FrownShape
-	std::vector< Vector3f > RFrownVertices;
-	std::vector< Tuple3u > RFrownFaces;
-	std::vector< Vector3f > RFrownNormals;
-
-	std::vector< Vector3f > LFrownVertices;
-	std::vector< Tuple3u > LFrownFaces;
-	std::vector< Vector3f > LFrownNormals;
+	BlendShape RFrownShape;
+	BlendShape LFrownShape;
 
 	// EyebrowUp
-	std::vector< Vector3f > REyebrowUpVertices;
-	std::vector< Tuple3u > REyebrowUpFaces;
-	std::vector< Vector3f > REyebrowUpNormals;
-
-	std::vector< Vector3f > LEyebrowUpVertices;
-	std::vector< Tuple3u > LEyebrowUpFaces;
-	std::vector< Vector3f > LEyebrowUpNormals;
+	BlendShape REyebrowUpShape;
+	BlendShape LEyebrowUpShape;
 
 	// EyebrowDown
-	std::vector< Vector3f > REyebrowDownVertices;
-	std::vector< Tuple3u > REyebrowDownFaces;
-	std::vector< Vector3f > REyebrowDownNormals;
-
-	std::vector< Vector3f > LEyebrowDownVertices;
-	std::vector< Tuple3u > LEyebrowDownFaces;
-	std::vector< Vector3f > LEyebrowDownNormals;
+	BlendShape REyebrowDownShape;
+	BlendShape LEyebrowDownShape;
 
 	// Smile
-	std::vector< Vector3f > RSmileVertices;
-	std::vector< Tuple3u > RSmileFaces;
-	std::vector< Vector3f > RSmileNormals;
-
-	std::vector< Vector3f > LSmileVertices;
-	std::vector< Tuple3u > LSmileFaces;
-	std::vector< Vector3f > LSmileNormals;
+	BlendShape RSmileShape;
+	BlendShape LSmileShape;
 
 	// EyeClose
-	std::vector< Vector3f > REyeCloseVertices;
-	std::vector< Tuple3u > REyeCloseFaces;
-	std::vector< Vector3f > REyeCloseNormals;
-
-	std::vector< Vector3f > LEyeCloseVertices;
-	std::vector< Tuple3u > LEyeCloseFaces;
-	std::vector< Vector3f > LEyeCloseNormals;
+	BlendShape REyeCloseShape;
+	BlendShape LEyeCloseShape;
+	
 
 	// current texture coordinates 
 	std::vector< Vector2f > textureCoords;
