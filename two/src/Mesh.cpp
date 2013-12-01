@@ -35,9 +35,9 @@ void Mesh::load_mesh( const char* filename )
         cerr << endl << "*** Mesh::load reading in file " << objString.c_str() << " ***" << endl;
     }
 	else {
-		objString = f + "/HeadShape.obj";
-		ifstream shapes(objString.c_str());
-		if (shapes){
+		objString = f + "/Head.obj";
+		ifstream in(objString.c_str());
+		if (in){
 			cerr << endl << "*** Mesh::load reading in blend shapes " << objString.c_str() << " ***" << endl;
 			useShapes = true;
 		}
