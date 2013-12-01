@@ -51,6 +51,7 @@ struct Mesh {
 
 	// 2.1.2. draw the current mesh.
 	void draw();
+	void draw_mesh();
 
 	// 2.2. Implement this method to load the per-vertex attachment weights
 	// this method should update m_mesh.attachments

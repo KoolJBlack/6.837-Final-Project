@@ -109,12 +109,12 @@ void Mesh::init_text() {
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     // Nice trilinear filtering.
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
     
     // Creat the GL texture data
     //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -125,30 +125,6 @@ void Mesh::init_text() {
                  t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
                  image); 
     delete [] image;
-
-    /*
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
-                 t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
-                 t.getData());
-    */
-
-    /*
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    int i, j, c;
-    for (i = 0; i < 64; i++) {
-      for (j = 0; j < 64; j++) {
-         c = ((((i&0x8)==0)^((j&0x8))==0))*255;
-         checkImage[i][j][0] = (GLubyte) c;
-         checkImage[i][j][1] = (GLubyte) c;
-         checkImage[i][j][2] = (GLubyte) c;
-         checkImage[i][j][3] = (GLubyte) 255;
-      }
-    }
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 
-                64, 0, GL_RGBA, GL_UNSIGNED_BYTE, 
-                checkImage);
-    */
 
     m_texture_init = true;
     cerr << "texture initialized " << endl;
@@ -196,12 +172,12 @@ void Mesh::draw() {
     if (t.valid() && !m_texture_init) {
         init_text();
     } 
-	// Since these meshes don't have normals
-	// be sure to generate a normal per triangle.
-	// Notice that since we have per-triangle normals
-	// rather than the analytical normals from
-	// assignment 1, the appearance is "faceted".
+    
+    draw_mesh();
 
+}
+
+void Mesh::draw_mesh() {
     // Enable texturing
     if (m_texture_init) {
         glEnable(GL_TEXTURE_2D);
@@ -210,7 +186,7 @@ void Mesh::draw() {
         glBindTexture(GL_TEXTURE_2D, textureID);
     }
 
-	// Iterate through all of the faces. Draw complete mesh.
+    // Iterate through all of the faces. Draw complete mesh.
     for(unsigned int index=0; index < faces.size(); index++) {
         vector<Tuple3u> face = faces[index];
         // Read verticies
@@ -275,8 +251,6 @@ void Mesh::draw() {
     if (m_texture_init) {
         glDisable(GL_TEXTURE_2D);
     }
-
-
 }
 
 void Mesh::loadAttachments( const char* filename, int numJoints )
