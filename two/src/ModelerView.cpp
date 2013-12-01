@@ -40,7 +40,8 @@ void ModelerView::loadModel(int argc, char* argv[])
 
 	//TODO: we only want to load meshes, so get rid of the skeleton...
 	//model.load(skeletonFile.c_str(), meshFile.c_str(), attachmentsFile.c_str());
-	m_mesh.load_mesh(meshFile.c_str());
+	//m_mesh.load_mesh(meshFile.c_str());
+	m_mesh.load_mesh(prefix.c_str());
 	// Load the texture
 	m_mesh.load_text(textFile.c_str());
 }

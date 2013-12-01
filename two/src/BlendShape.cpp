@@ -1,5 +1,7 @@
 #include "BlendShape.h"
 
+#include "helpers.h"
+
 using namespace std;
 
 BlendShape::BlendShape()
@@ -36,7 +38,7 @@ void BlendShape::load_shape(const char* filename, BlendShape& shape){
         } else if (s == "f") {
             string abc, def,ghi;
             ss >> abc >> def >> ghi;
-			/*
+			
             vector<string> f1 = split(abc, '/');
             vector<string> f2 = split(def, '/');
             vector<string> f3 = split(ghi, '/');
@@ -45,7 +47,7 @@ void BlendShape::load_shape(const char* filename, BlendShape& shape){
             unsigned d = atoi(f2[0].c_str());
             unsigned g = atoi(f3[0].c_str());
             shape.b_faces.push_back(Tuple3u(a, d, g));
-			*/
+			
 			
         } else if (s == "vn") {// normals
 			Vector3f& curr = Vector3f(0,0,0);
