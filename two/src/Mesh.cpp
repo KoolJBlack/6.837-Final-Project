@@ -5,24 +5,6 @@
 
 using namespace std;
 
-/*
-// These are utility functions for splitting strings
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
-
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, elems);
-    return elems;
-}
-*/
-
 void Mesh::load_mesh( const char* filename )
 {
 	// check if we are loading a single .obj file or all blendshapes
@@ -47,17 +29,64 @@ void Mesh::load_mesh( const char* filename )
 		}	
 	}
 	
+	ifstream in1(objString.c_str());
+    // load the OBJ file here
+    string line;
+    while (std::getline(in1, line)) {
+        // Parse line values through string stream.
+        stringstream ss(line);
+        string s;
+        ss >> s; 
+
+        if (s == "v") {
+            Vector3f v;
+            ss >> v[0] >> v[1] >> v[2];
+            currentVertices.push_back(v);
+            // Set the default color
+            vertexColors.push_back(Vector3f(1.0,1.0,1.0));
+        } else if (s == "f") {
+            string abc, def,ghi;
+            ss >> abc >> def >> ghi;
+            vector<string> f1 = split(abc, '/');
+            vector<string> f2 = split(def, '/');
+            vector<string> f3 = split(ghi, '/');
+            unsigned a = atoi(f1[0].c_str());
+            unsigned d = atoi(f2[0].c_str());
+            unsigned g = atoi(f3[0].c_str());
+            faces.push_back(Tuple3u(a, d, g));
+        } else if (s == "vn") {// normals
+			vertexNormals.push_back(Vector3f(0,0,0));
+			Vector3f& curr = vertexNormals.back();
+			ss >> curr[0] >> curr[1] >> curr[2];
+		} else if (s == "vt") {
+			Vector2f texcoord;
+			ss>>texcoord[0];
+			ss>>texcoord[1];
+			textureCoords.push_back(texcoord);
+		} else {
+            // ignore remaining tokens
+        }
+    } 
+    // end while cin
+    cerr << "currentVertices size " << currentVertices.size() << endl;
+    cerr << "textCoords size " << textureCoords.size() << endl;
+    cerr << "faces size " << faces.size() << endl;
+    cerr << "normals size " << vertexNormals.size() << endl;
+
+
+	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
+		// TODO: fill this in. 
+	}
+
+    // Load the texture if possible
+	
+	// load the headshape as the default
+	HeadShape.b_vertices = currentVertices;
+	HeadShape.b_faces = faces;
+	HeadShape.b_normals = vertexNormals;
+
     if (useShapes){
 		// hardcoding this part to fit the blend shapes we are using. 
-
-		// start with head shape. We will use this as a default if other shapes are suddenly missing
-		BlendShape::load_shape(objString.c_str(), HeadShape);
-		
-		// load the headshape as the default
-		bindVertices = HeadShape.b_vertices;
-		faces = HeadShape.b_faces;
-		vertexNormals = HeadShape.b_normals;
-		currentVertices = bindVertices;
 
 		string LFrown = f + "/LFrown.obj";
 		string LSmile = f + "/LSmile.obj";
@@ -70,211 +99,26 @@ void Mesh::load_mesh( const char* filename )
 		string REyebrowDown = f + "/REyebrowDown.obj";
 		string REyeClose = f + "/REyeClose.obj";
 		
-		BlendShape::load_shape(LFrown.c_str(), LFrownShape); 
-		BlendShape::load_shape(LSmile.c_str(), LSmileShape);
-		BlendShape::load_shape(LEyebrowUp.c_str(), LEyebrowUpShape);
-		BlendShape::load_shape(LEyebrowDown.c_str(), LEyebrowDownShape);
-		BlendShape::load_shape(LEyeClose.c_str(), LEyeCloseShape);
-		BlendShape::load_shape(RFrown.c_str(), RFrownShape); 
-		BlendShape::load_shape(RSmile.c_str(), RSmileShape);
-		BlendShape::load_shape(REyebrowUp.c_str(), REyebrowUpShape);
-		BlendShape::load_shape(REyebrowDown.c_str(), REyebrowDownShape);
-		BlendShape::load_shape(REyeClose.c_str(), REyeCloseShape);
+		m_blendShapes[1] = BlendShape::load_shape(LSmile.c_str(), LSmileShape);		
+		m_blendShapes[2] = BlendShape::load_shape(RSmile.c_str(), RSmileShape);
+		m_blendShapes[3] = BlendShape::load_shape(LFrown.c_str(), LFrownShape); 
+		m_blendShapes[4] = BlendShape::load_shape(RFrown.c_str(), RFrownShape); 
+		m_blendShapes[5] = BlendShape::load_shape(LEyeClose.c_str(), LEyeCloseShape);
+		m_blendShapes[6] = BlendShape::load_shape(REyeClose.c_str(), REyeCloseShape);		
+		m_blendShapes[7] = BlendShape::load_shape(LEyebrowUp.c_str(), LEyebrowUpShape);
+		m_blendShapes[8] = BlendShape::load_shape(REyebrowUp.c_str(), REyebrowUpShape);
+		m_blendShapes[9] = BlendShape::load_shape(LEyebrowDown.c_str(), LEyebrowDownShape);
+		m_blendShapes[10] = BlendShape::load_shape(REyebrowDown.c_str(), REyebrowDownShape);
 		
-
-		return; 
+		m_blendShapes[0] = HeadShape;
 	}
-	
-
-    // load the OBJ file here
-    string line;
-    while (std::getline(in, line)) {
-        // Parse line values through string stream.
-        stringstream ss(line);
-        string s;
-        ss >> s; 
-
-        if (s == "v") {
-            Vector3f v;
-            ss >> v[0] >> v[1] >> v[2];
-            bindVertices.push_back(v);
-            // Set the default color
-            vertexColors.push_back(Vector3f(1.0,1.0,1.0));
-        } else if (s == "f") {
-            //vector<Vector3f> face;
-            string abc, def,ghi;
-            ss >> abc >> def >> ghi;
-            vector<string> f1 = split(abc, '/');
-            vector<string> f2 = split(def, '/');
-            vector<string> f3 = split(ghi, '/');
-            unsigned a = atoi(f1[0].c_str());
-            unsigned d = atoi(f2[0].c_str());
-            unsigned g = atoi(f3[0].c_str());
-            faces.push_back(Tuple3u(a, d, g));
-        } else if (s == "vn") {// normals
-			vertexNormals.push_back(Vector3f(0,0,0));
-			Vector3f& curr = vertexNormals.back();
-			ss >> curr[0] >> curr[1] >> curr[2];
-		} else if (s == "vt") {
-			Vector2f texcoord;
-			ss>>texcoord[0];
-			ss>>texcoord[1];
-			textureCoords.push_back(texcoord);
-		} else {
-            // ignore remaining tokens
-        }
-    } 
-    // end while cin
-    cerr << "bindVertices size " << bindVertices.size() << endl;
-    cerr << "textCoords size " << textureCoords.size() << endl;
-    cerr << "faces size " << faces.size() << endl;
-    cerr << "normals size " << vertexNormals.size() << endl;
-
-	// make a copy of the bind vertices as the current vertices
-	currentVertices = bindVertices;
-
-	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
-		// TODO: fill this in. 
+	else{
+		for(int i = 0; i < 11; i++){
+			m_blendShapes[i] = HeadShape;
+		}
 	}
-
-    // Load the texture if possible
 
 }
-
-/*
-void Mesh::load_mesh( const char* filename )
-{
-	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
-
-	// Add your code here.
-	ifstream in(filename);
-    if (!in) {
-        cerr<< filename << " not found\a" << endl;
-        exit(0);
-    }
-
-    cerr << endl << "*** Mesh::load reading in file " << filename << " ***" << endl;
-
-    // load the OBJ file here
-    string line;
-    while (std::getline(in, line)) {
-        // Parse line values through string stream.
-        stringstream ss(line);
-        string s;
-        ss >> s; 
-
-        if (s == "v") {
-            Vector3f v;
-            ss >> v[0] >> v[1] >> v[2];
-            bindVertices.push_back(v);
-            // Set the default color
-            vertexColors.push_back(Vector3f(1.0,1.0,1.0));
-        } else if (s == "f") {
-            vector<Vector3f> face;
-            string abc, def,ghi;
-            ss >> abc >> def >> ghi;
-            vector<string> f1 = split(abc, '/');
-            vector<string> f2 = split(def, '/');
-            vector<string> f3 = split(ghi, '/');
-            unsigned a = atoi(f1[0].c_str());
-            unsigned d = atoi(f2[0].c_str());
-            unsigned g = atoi(f3[0].c_str());
-            faces.push_back(Tuple3u(a, d, g));
-        } else if (s == "vn") {// normals
-			vertexNormals.push_back(Vector3f(0,0,0));
-			Vector3f& curr = vertexNormals.back();
-			ss >> curr[0] >> curr[1] >> curr[2];
-		} else if (s == "vt") {
-			Vector2f texcoord;
-			ss>>texcoord[0];
-			ss>>texcoord[1];
-			textureCoords.push_back(texcoord);
-		} else {
-            // ignore remaining tokens
-        }
-    } 
-    // end while cin
-    cerr << "bindVertices size " << bindVertices.size() << endl;
-    cerr << "textCoords size " << textureCoords.size() << endl;
-    cerr << "faces size " << faces.size() << endl;
-    cerr << "normals size " << vertexNormals.size() << endl;
-
-	// make a copy of the bind vertices as the current vertices
-	currentVertices = bindVertices;
-
-	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
-
-	}
-
-    // Load the texture if possible
-
-}
-*/
-/*
-// helper function to load all of the blend shapes initially 
-void Mesh::load_shape(const char *filename, vector<Vector3f>& vertices, vector<Tuple3u>& faces, vector<Vector3f>& normals) {
-
-	// Add your code here.
-	ifstream in(filename);
-    if (!in) {
-        cerr<< filename << " not found\a" << endl;
-        exit(0);
-    }
-
-    cerr << endl << "*** Mesh::load reading in file " << filename << " ***" << endl;
-
-    // load the OBJ file here
-    string line;
-    while (std::getline(in, line)) {
-        // Parse line values through string stream.
-        stringstream ss(line);
-        string s;
-        ss >> s; 
-
-        if (s == "v") {
-            Vector3f v;
-            ss >> v[0] >> v[1] >> v[2];
-            vertices.push_back(v);
-            // Set the default color
-            vertexColors.push_back(Vector3f(1.0,1.0,1.0));
-        } else if (s == "f") {
-            string abc, def,ghi;
-            ss >> abc >> def >> ghi;
-            vector<string> f1 = split(abc, '/');
-            vector<string> f2 = split(def, '/');
-            vector<string> f3 = split(ghi, '/');
-            unsigned a = atoi(f1[0].c_str());
-            unsigned d = atoi(f2[0].c_str());
-            unsigned g = atoi(f3[0].c_str());
-            faces.push_back(Tuple3u(a, d, g));
-        } else if (s == "vn") {// normals
-			Vector3f& curr = Vector3f(0,0,0);
-			ss >> curr[0] >> curr[1] >> curr[2];
-			normals.push_back(curr);
-		} 
-		
-		// TODO: deal with texture coordinates later. might need to be done, or just get rid of this
-		else if (s == "vt") {
-			Vector2f texcoord;
-			ss>>texcoord[0];
-			ss>>texcoord[1];
-			textureCoords.push_back(texcoord);
-		} 
-		
-		else {
-            // ignore remaining tokens
-        }
-    } 
-    // end while cin
-
-	// make a copy of the bind vertices as the current vertices
-	currentVertices = bindVertices;
-
-	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
-
-	}
-}
-*/
 
 void Mesh::load_text(const char* filename ) {
     t.load(filename);
@@ -367,7 +211,11 @@ void Mesh::draw() {
         Vector3f c2 = vertexColors[face[1] - 1];
         Vector3f c3 = vertexColors[face[2] - 1];
         // Calculate normal
+		// TODO: let's see if we can use the normals given to us -- issue: it gives weird lighting
         Vector3f n = Vector3f::cross(v2 - v1, v3 - v1).normalized();
+		//Vector3f n1 = vertexNormals[face[0] - 1];
+		//Vector3f n2 = vertexNormals[face[1] - 1];
+		//Vector3f n3 = vertexNormals[face[2] - 1];
 
         // Draw with or without texturing
         if (m_texture_init) {

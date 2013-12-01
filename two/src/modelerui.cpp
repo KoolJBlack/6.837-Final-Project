@@ -22,7 +22,7 @@ if (filename)
 	m_modelerWindow->show();
 //	do {Sleep(10); }
 //	while (!m_modelerWindow->shown());
-//	m_modelerView->draw();
+	m_modelerView->draw();
 	m_modelerView->make_current();
 m_modelerView->draw();
 	

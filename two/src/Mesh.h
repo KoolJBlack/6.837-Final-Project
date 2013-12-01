@@ -17,7 +17,7 @@ typedef tuple< unsigned, 3 > Tuple3u;
 struct Mesh {
 	// list of vertices from the OBJ file
 	// in the "bind pose"
-	std::vector< Vector3f > bindVertices;
+	//std::vector< Vector3f > bindVertices;
 
 	// each face has 3 indices
 	// referencing 3 vertices
@@ -34,26 +34,29 @@ struct Mesh {
 	
 	// HeadShape = neutral face
 	BlendShape HeadShape;
+	
+	// Smile
+	BlendShape LSmileShape;
+	BlendShape RSmileShape;
 
 	// FrownShape
-	BlendShape RFrownShape;
 	BlendShape LFrownShape;
+	BlendShape RFrownShape;
+	
+	// EyeClose
+	BlendShape LEyeCloseShape;
+	BlendShape REyeCloseShape;
 
 	// EyebrowUp
-	BlendShape REyebrowUpShape;
 	BlendShape LEyebrowUpShape;
+	BlendShape REyebrowUpShape;
 
 	// EyebrowDown
-	BlendShape REyebrowDownShape;
 	BlendShape LEyebrowDownShape;
+	BlendShape REyebrowDownShape;
 
-	// Smile
-	BlendShape RSmileShape;
-	BlendShape LSmileShape;
-
-	// EyeClose
-	BlendShape REyeCloseShape;
-	BlendShape LEyeCloseShape;
+	//vector<BlendShape> m_blendShapes;
+	BlendShape m_blendShapes[11];
 	
 
 	// current texture coordinates 

@@ -33,10 +33,10 @@ void ModelerView::loadModel(int argc, char* argv[])
 
 	// Load the model based on the command-line arguments
 	string prefix = argv[ 1 ];
-	string skeletonFile = prefix + ".skel";
+	//string skeletonFile = prefix + ".skel";
 	string meshFile = prefix + ".obj";
 	string textFile = prefix + ".bmp";
-	string attachmentsFile = prefix + ".attach";
+	//string attachmentsFile = prefix + ".attach";
 
 	//TODO: we only want to load meshes, so get rid of the skeleton...
 	//model.load(skeletonFile.c_str(), meshFile.c_str(), attachmentsFile.c_str());
@@ -119,16 +119,56 @@ int ModelerView::handle( int event )
 
 void ModelerView::update()
 {
+	// update the mesh from sliders
+	updateBlendShapes();
 
 	// Kai commented all of this out...
 	// update the skeleton from sliders
 	//updateJoints();
+
 
 	// Update the bone to world transforms for SSD.
 	//model.updateCurrentJointToWorldTransforms();
 
 	// update the mesh given the new skeleton
 	//model.updateMesh();
+
+}
+
+// TODO: finish this. 
+// update the mesh from the sliders
+void ModelerView::updateBlendShapes()
+{
+	vector<float> weights;
+	weights.push_back(0.0); // headshape starts at 0 weight and only increases when total of other weights < 1
+	float total_w = 0.0f;
+	for(unsigned int faceNum = 1; faceNum < 11; faceNum++){
+		float w = VAL(faceNum);
+		weights.push_back(w);
+		total_w += w;
+	}
+	if (total_w < 1.0f){
+		// make sure that all of the weights sum to 1
+		// fill in any remaining weight into the head position
+		weights[0] += (1.0f - total_w);
+	}
+	else if (total_w > 1.0f){
+		for(unsigned int faceNum = 0; faceNum < 11; faceNum++){
+			weights[faceNum] = weights[faceNum] / total_w;
+		}
+	}
+
+	for (unsigned int vNum = 0; vNum < m_mesh.currentVertices.size(); vNum++){		
+		Vector3f& newVert = Vector3f(0.0);
+		//Vector3f& newNorm = Vector3f(0.0);
+		for(unsigned int faceNum = 0; faceNum < 11; faceNum++){
+			newVert += m_mesh.m_blendShapes[faceNum].b_vertices[vNum] * weights[faceNum];
+			//newNorm += m_mesh.m_blendShapes[faceNum].b_normals[vNum] * weights[faceNum];
+		}
+		m_mesh.currentVertices[vNum] = newVert;
+		//m_mesh.vertexNormals[vNum] = newNorm;
+	}
+	
 }
 
 void ModelerView::updateJoints()

@@ -16,7 +16,7 @@ class BlendShape {
 
 public:
 	BlendShape();
-	static void load_shape(const char* filename, BlendShape& shape);
+	static BlendShape& load_shape(const char* filename, BlendShape& shape);
 
 	~BlendShape();
 
