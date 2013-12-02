@@ -111,7 +111,7 @@ void Mesh::load_mesh( const char* filename )
 	
 	// load the headshape as the default
 	HeadShape.b_vertices = currentVertices;
-	HeadShape.b_faces = faces;
+	//HeadShape.b_faces = faces;
 	HeadShape.b_normals = vertexNormals;
 
     if (useShapes){

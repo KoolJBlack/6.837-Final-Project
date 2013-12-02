@@ -164,7 +164,7 @@ void ModelerView::updateBlendShapes()
 	}
 
 	for (unsigned int vNum = 0; vNum < m_mesh.currentVertices.size(); vNum++){		
-		Vector3f& newVert = Vector3f(0.0);
+		Vector3f newVert = Vector3f(0.0);
 		//Vector3f& newNorm = Vector3f(0.0);
 		for(unsigned int faceNum = 0; faceNum < 11; faceNum++){
 			newVert += m_mesh.m_blendShapes[faceNum].b_vertices[vNum] * weights[faceNum];
