@@ -42,7 +42,11 @@ void ModelerView::loadModel(int argc, char* argv[])
 	//model.load(skeletonFile.c_str(), meshFile.c_str(), attachmentsFile.c_str());
 	m_mesh.load_mesh(meshFile.c_str());
 	// Load the texture
-	m_mesh.load_text(textFile.c_str());
+	//m_mesh.load_text(textFile.c_str());
+	m_mesh.load_text("data/Steve.bmp");
+
+	// Pass the camera to mesh
+	m_mesh.setCamera(m_camera);
 }
 
 ModelerView::~ModelerView()
@@ -162,6 +166,7 @@ void ModelerView::draw()
         m_camera->SetViewport(0,0,w(),h());
         m_camera->ApplyViewport();
         
+        // Camera set perspective matrix
         glMatrixMode( GL_PROJECTION );
         glLoadIdentity();
         m_camera->SetPerspective( 50.0f );
@@ -190,6 +195,10 @@ void ModelerView::draw()
     glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, shininess );
 
     // Load the camera view matrix
+    // The lights are always in the same place reletive to the projection, 
+    // because the viewMatrix is not loaded until after the lights are set. 
+    // Note, the view matrix really moves the model matrix (the wolrd moves)
+    // It does not change gllookat.
 	glLoadMatrixf( m_camera->viewMatrix() );
 
     if(m_drawAxes)

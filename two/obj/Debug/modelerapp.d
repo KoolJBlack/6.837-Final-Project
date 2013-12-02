@@ -4,8 +4,8 @@ obj/Debug/modelerapp.o: src/modelerapp.cpp src/modelerapp.h \
   vecmath/include/Matrix4f.h vecmath/include/Quat4f.h \
   vecmath/include/Vector2f.h vecmath/include/Vector3f.h \
   vecmath/include/Vector4f.h src/SkeletalModel.h src/tuple.h src/Joint.h \
-  src/Mesh.h src/Texture.h src/bitmap_image.h src/MatrixStack.h \
-  src/modelerui.h src/bitmap.h src/camera.h
+  src/Mesh.h src/Texture.h src/bitmap_image.h src/camera.h \
+  src/MatrixStack.h src/modelerui.h src/bitmap.h
 
 src/modelerapp.h:
 
@@ -41,10 +41,10 @@ src/Texture.h:
 
 src/bitmap_image.h:
 
+src/camera.h:
+
 src/MatrixStack.h:
 
 src/modelerui.h:
 
 src/bitmap.h:
-
-src/camera.h:

@@ -6,6 +6,10 @@
 using namespace std;
 
 
+void Mesh::setCamera(Camera * c) {
+    m_camera = c;
+}
+
 void Mesh::load_mesh( const char* filename )
 {
 	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
@@ -74,7 +78,7 @@ void Mesh::load_mesh( const char* filename )
 			Vector2f texcoord;
 			ss>>texcoord[0];
 			ss>>texcoord[1];
-            texcoord[1] = 1.0-texcoord[1];
+            //texcoord[1] = 1.0-texcoord[1];
 			textureCoords.push_back(texcoord);
 		} else {
             // ignore remaining tokens
@@ -99,16 +103,19 @@ void Mesh::load_text(const char* filename ) {
     t.load(filename);
     cerr << "texture width " << t.getWidth() << " height " << t.getHeight() << endl;
     m_texture_init = false;
+    m_projected_init = false;
 }
 
+
+
 void Mesh::init_text() {
-    // Create one OpenGL texture
-    glGenTextures(1, &textureID);
+    // Create one OpenGL textures
+    glGenTextures(1, &texture1ID);
 
     // "Bind" the newly created texture : all futuhre texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    glBindTexture(GL_TEXTURE_2D, texture1ID);
 
-    // Nice trilinear filtering.
+    // Nice trilinear filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
@@ -126,9 +133,55 @@ void Mesh::init_text() {
                  image); 
     delete [] image;
 
+
     m_texture_init = true;
     cerr << "texture initialized " << endl;
 }
+
+void Mesh::init_projective_text() {
+    // Create one OpenGL textures
+    glGenTextures(1, &texture2ID);
+
+    // "Bind" the newly created texture : all futuhre texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, texture2ID);
+
+    // Nice trilinear filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering
+
+    // Set the GL texture
+    GLubyte* image = t.getGLTexture();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
+                 t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
+                 image); 
+    delete [] image;
+
+    //Set up texture coordinate generation.
+    Matrix4f mm =  Matrix4f::identity();
+    Matrix4f m = Matrix4f(0.5f, 0.0f, 0.0f, 0.5f,
+                            0.0f, 0.5f, 0.0f, 0.5f,
+                            0.0f, 0.0f, 0.5f, 0.5f,
+                            0.0f, 0.0f, 0.0f, 1.0f);    
+
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+    glTexGenfv(GL_S, GL_EYE_PLANE, m.getRow(0));
+
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+    glTexGenfv(GL_T, GL_EYE_PLANE,  m.getRow(1));
+
+    glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+    glTexGenfv(GL_R, GL_EYE_PLANE, m.getRow(2));
+
+    glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+    glTexGenfv(GL_Q, GL_EYE_PLANE, m.getRow(3));
+
+    m_projected_init = true;
+    cerr << "projected initialized " << endl;
+}
+
 
 
 /*
@@ -166,25 +219,63 @@ void Mesh::compute_norm()
 }
 */
 
+void Mesh::project_texture() {
+    glMatrixMode(GL_TEXTURE);
+    glLoadIdentity();
+    //glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
+    //glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
+    //gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
+    gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    //m_camera->SetPerspective( 50.0f );
+    //glLoadMatrixf( m_camera->projectionMatrix() );
+    glMatrixMode(GL_MODELVIEW);
+}
+
+
 void Mesh::draw() {
     // Init the texture if it hasn't been done yet
     // This is a hack because texture loading can only be done after the window is created
-    if (t.valid() && !m_texture_init) {
-        init_text();
+    if (t.valid() && !m_texture_init ) {
+        //init_text();
     } 
-    
+    if (t.valid() && !m_projected_init ) {
+        init_projective_text();
+    } 
+
+    if (m_projected_init) {
+        glBindTexture(GL_TEXTURE_2D, texture2ID);
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_GEN_S);
+        glEnable(GL_TEXTURE_GEN_T);
+        glEnable(GL_TEXTURE_GEN_R);
+        glEnable(GL_TEXTURE_GEN_Q);
+        project_texture();
+    }
+
+    // Draw the mesh and texture that we project onto
     draw_mesh();
+
+    if (m_projected_init) {
+      glDisable(GL_TEXTURE_2D);
+      glDisable(GL_TEXTURE_GEN_S);
+      glDisable(GL_TEXTURE_GEN_T);
+      glDisable(GL_TEXTURE_GEN_R);
+      glDisable(GL_TEXTURE_GEN_Q);
+    }
+
 
 }
 
 void Mesh::draw_mesh() {
     // Enable texturing
+    
     if (m_texture_init) {
         glEnable(GL_TEXTURE_2D);
         //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        glBindTexture(GL_TEXTURE_2D, texture1ID);
     }
+    
 
     // Iterate through all of the faces. Draw complete mesh.
     for(unsigned int index=0; index < faces.size(); index++) {
@@ -231,7 +322,7 @@ void Mesh::draw_mesh() {
             //glEnable (GL_LIGHTING);
         } else {
             //glDisable (GL_LIGHTING);
-            glEnable(GL_COLOR_MATERIAL);
+            //glEnable(GL_COLOR_MATERIAL);
             glBegin(GL_TRIANGLES);
             glColor3fv(c1);
             glNormal3fv(n);
@@ -247,10 +338,12 @@ void Mesh::draw_mesh() {
         }
     }
 
+    
     // Disable Texturing
     if (m_texture_init) {
         glDisable(GL_TEXTURE_2D);
     }
+    
 }
 
 void Mesh::loadAttachments( const char* filename, int numJoints )

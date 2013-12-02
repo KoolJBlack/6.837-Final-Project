@@ -4,7 +4,7 @@ obj/Debug/ModelerView.o: src/ModelerView.cpp src/ModelerView.h \
   vecmath/include/Quat4f.h vecmath/include/Vector2f.h \
   vecmath/include/Vector3f.h vecmath/include/Vector4f.h \
   src/SkeletalModel.h src/tuple.h src/Joint.h src/Mesh.h src/Texture.h \
-  src/bitmap_image.h src/MatrixStack.h src/camera.h src/modelerapp.h
+  src/bitmap_image.h src/camera.h src/MatrixStack.h src/modelerapp.h
 
 src/ModelerView.h:
 
@@ -38,8 +38,8 @@ src/Texture.h:
 
 src/bitmap_image.h:
 
-src/MatrixStack.h:
-
 src/camera.h:
+
+src/MatrixStack.h:
 
 src/modelerapp.h:

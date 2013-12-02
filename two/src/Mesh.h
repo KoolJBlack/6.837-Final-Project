@@ -10,6 +10,7 @@
 #include "extra.h"
 #include "tuple.h"
 #include "Texture.h"
+#include "camera.h"
 
 typedef tuple< unsigned, 3 > Tuple3u;
 
@@ -39,19 +40,25 @@ struct Mesh {
 	// one attachment weight per joint
 	std::vector< std::vector< float > > attachments;
 
+	void setCamera(Camera * c);
+
 	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
 	void load_mesh(const char *filename);
 	
 	// Texture loading functions
 	void load_text(const char *filename);
+
+	// Texture initialization
 	void init_text();
+	void init_projective_text();
 
 	// compute the normals if they are not given in the object file
 	void compute_norm();
 
-	// 2.1.2. draw the current mesh.
+	// Draw the current mesh and texture projections
 	void draw();
 	void draw_mesh();
+	void project_texture();
 
 	// 2.2. Implement this method to load the per-vertex attachment weights
 	// this method should update m_mesh.attachments
@@ -60,12 +67,15 @@ struct Mesh {
 	// Texture elements
 	Texture t;
 	bool m_texture_init;
+	bool m_projected_init;
+
 	// GL texture info
-  	GLuint textureID;
-  	// Debug
-    int checkImageWidth = 64;
-	int checkImageHeight = 64;
-	GLubyte checkImage[64][64][4];
+  	GLuint texture1ID;
+  	GLuint texture2ID;
+
+  	// Camera info
+  	Camera *m_camera;
+
 };
 
 #endif

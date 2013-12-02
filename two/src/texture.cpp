@@ -23,9 +23,10 @@ GLubyte* Texture::getGLTexture() {
     for (int i = 0; i < h; i++) {
         for (int j = 0; j < w; j++) {
             bimg->get_pixel(j, i,red, green, blue );
-            image[i * w * 3+ j * 3 + 0] = (GLubyte) red;
-            image[i * w * 3+ j * 3 + 1] = (GLubyte) green;
-            image[i * w * 3+ j * 3 + 2] = (GLubyte) blue;
+            int ii = h - i - 1;
+            image[ii * w * 3+ j * 3 + 0] = (GLubyte) red;
+            image[ii * w * 3+ j * 3 + 1] = (GLubyte) green;
+            image[ii * w * 3+ j * 3 + 2] = (GLubyte) blue;
         }
     }
     return image;
