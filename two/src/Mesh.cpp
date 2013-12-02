@@ -199,8 +199,8 @@ void Mesh::init_projective_text() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear Filtering
 
     // Set the GL texture
     GLubyte* image = t.getGLTexture();
@@ -277,6 +277,7 @@ void Mesh::project_texture() {
     gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
     gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     //glMultMatrixf( m_camera->viewMatrix() );
+    glMultMatrixf(m_camera->GetRotation().inverse());
     glMatrixMode(GL_MODELVIEW);
 }
 
