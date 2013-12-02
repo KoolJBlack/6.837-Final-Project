@@ -210,8 +210,8 @@ void Mesh::init_projective_text() {
     delete [] image;
 
     //Set up texture coordinate generation.
-    Matrix4f mm =  Matrix4f::identity();
-    Matrix4f m = Matrix4f(0.5f, 0.0f, 0.0f, 0.5f,
+    Matrix4f m =  Matrix4f::identity();
+    Matrix4f mm = Matrix4f(0.5f, 0.0f, 0.0f, 0.5f,
                             0.0f, 0.5f, 0.0f, 0.5f,
                             0.0f, 0.0f, 0.5f, 0.5f,
                             0.0f, 0.0f, 0.0f, 1.0f);    
@@ -272,12 +272,11 @@ void Mesh::compute_norm()
 void Mesh::project_texture() {
     glMatrixMode(GL_TEXTURE);
     glLoadIdentity();
-    //glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
-    //glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
-    //gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
+    glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
+    glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
+    gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
     gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-    //m_camera->SetPerspective( 50.0f );
-    //glLoadMatrixf( m_camera->projectionMatrix() );
+    //glMultMatrixf( m_camera->viewMatrix() );
     glMatrixMode(GL_MODELVIEW);
 }
 
