@@ -35,7 +35,7 @@ void Mesh::load_mesh( const char* filename )
 	}
 	
 	ifstream in1(objString.c_str());
-    // load the OBJ file here
+    // load the BJ fOile here
     string line;
     while (std::getline(in1, line)) {
         // Parse line values through string stream.

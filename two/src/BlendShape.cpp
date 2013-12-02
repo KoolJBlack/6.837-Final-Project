@@ -8,7 +8,7 @@ BlendShape::BlendShape()
 {
 	b_vertices = vector<Vector3f>();
 	b_normals = vector<Vector3f>();
-	b_faces = vector<Tuple3u>();
+	b_faces = vector<vector<Tuple3u>>();
 }
 
 BlendShape& BlendShape::load_shape(const char* filename, BlendShape& shape){
