@@ -22,7 +22,7 @@ public:
 
 	std::vector<Vector3f> b_vertices;
 	std::vector<Vector3f> b_normals;
-	std::vector<std::vector<Tuple3u>> b_faces;
+	//std::vector<vector<Tuple3u>> b_faces;
 
 
 };
