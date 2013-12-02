@@ -277,6 +277,8 @@ void Mesh::project_texture() {
     gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
     gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     //glMultMatrixf( m_camera->viewMatrix() );
+    //glMultMatrixf(m_camera->GetRotation().inverse());
+    glMultMatrixf(Matrix4f::translation(-m_camera->GetCenter()).inverse());
     glMultMatrixf(m_camera->GetRotation().inverse());
     glMatrixMode(GL_MODELVIEW);
 }
