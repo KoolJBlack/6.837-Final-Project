@@ -44,8 +44,8 @@ void ModelerView::loadModel(int argc, char* argv[])
 	//m_mesh.load_mesh(meshFile.c_str());
 	m_mesh.load_mesh(prefix.c_str());
 	// Load the texture
-	//m_mesh.load_text(textFile.c_str());
-	m_mesh.load_text("data/Steve.bmp");
+	m_mesh.load_text(textFile.c_str());
+	//m_mesh.load_text("data/Steve.bmp");
 
 	// Pass the camera to mesh
 	m_mesh.setCamera(m_camera);
@@ -164,7 +164,7 @@ void ModelerView::updateBlendShapes()
 	}
 
 	for (unsigned int vNum = 0; vNum < m_mesh.currentVertices.size(); vNum++){		
-		Vector3f& newVert = Vector3f(0.0);
+		Vector3f newVert = Vector3f(0.0);
 		//Vector3f& newNorm = Vector3f(0.0);
 		for(unsigned int faceNum = 0; faceNum < 11; faceNum++){
 			newVert += m_mesh.m_blendShapes[faceNum].b_vertices[vNum] * weights[faceNum];

@@ -69,6 +69,7 @@ endif
 
 OBJECTS := \
 	$(OBJDIR)/bitmap.o \
+	$(OBJDIR)/BlendShape.o \
 	$(OBJDIR)/camera.o \
 	$(OBJDIR)/Joint.o \
 	$(OBJDIR)/main.o \
@@ -140,6 +141,9 @@ $(GCH): $(PCH)
 endif
 
 $(OBJDIR)/bitmap.o: src/bitmap.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/BlendShape.o: src/BlendShape.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/camera.o: src/camera.cpp

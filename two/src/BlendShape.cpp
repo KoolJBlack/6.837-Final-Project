@@ -53,7 +53,7 @@ BlendShape& BlendShape::load_shape(const char* filename, BlendShape& shape){
         } 
 		*/
 		else if (s == "vn") {// normals
-			Vector3f& curr = Vector3f(0,0,0);
+			Vector3f curr = Vector3f(0,0,0);
 			ss >> curr[0] >> curr[1] >> curr[2];
 			shape.b_normals.push_back(curr);
 		} 
