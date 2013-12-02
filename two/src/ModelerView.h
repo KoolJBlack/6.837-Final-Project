@@ -30,6 +30,7 @@ public:
 	virtual void update();
     virtual void draw();
 
+	void updateBlendShapes();
 	void updateJoints();
 	void drawAxes();
 

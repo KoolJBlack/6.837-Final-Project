@@ -248,6 +248,7 @@ void SkeletalModel::updateMesh()
 	// and the current joint --> world transforms.
     cerr << endl << "*** updateMesh ***" << endl;
 
+	/*
     for(unsigned int i=0; i < m_mesh.bindVertices.size(); ++i) {
     	Vector3f bindVertex = m_mesh.bindVertices[i];
     	Vector3f currentVertex;
@@ -261,5 +262,8 @@ void SkeletalModel::updateMesh()
     	m_mesh.currentVertices[i] = currentVertex;
     	m_mesh.vertexColors[i] = color.normalized();
 	}
+	*/
+
+	//TODO: do we need to fill this in? I'm technically not using SkeletalModel at all...
 }
 

@@ -11,13 +11,14 @@
 #include "tuple.h"
 #include "Texture.h"
 #include "camera.h"
+#include "BlendShape.h"
 
 typedef tuple< unsigned, 3 > Tuple3u;
 
 struct Mesh {
 	// list of vertices from the OBJ file
 	// in the "bind pose"
-	std::vector< Vector3f > bindVertices;
+	//std::vector< Vector3f > bindVertices;
 
 	// each face has 3 indices
 	// referencing 3 vertices
@@ -28,6 +29,36 @@ struct Mesh {
 
 	// current vertex normals
 	std::vector< Vector3f > vertexNormals;
+
+
+	// Need vertices for every blend shape pose
+	
+	// HeadShape = neutral face
+	BlendShape HeadShape;
+	
+	// Smile
+	BlendShape LSmileShape;
+	BlendShape RSmileShape;
+
+	// FrownShape
+	BlendShape LFrownShape;
+	BlendShape RFrownShape;
+	
+	// EyeClose
+	BlendShape LEyeCloseShape;
+	BlendShape REyeCloseShape;
+
+	// EyebrowUp
+	BlendShape LEyebrowUpShape;
+	BlendShape REyebrowUpShape;
+
+	// EyebrowDown
+	BlendShape LEyebrowDownShape;
+	BlendShape REyebrowDownShape;
+
+	//vector<BlendShape> m_blendShapes;
+	BlendShape m_blendShapes[11];
+	
 
 	// current texture coordinates 
 	std::vector< Vector2f > textureCoords;
@@ -44,6 +75,9 @@ struct Mesh {
 
 	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
 	void load_mesh(const char *filename);
+
+	// helper function to load multiple shapes
+	void load_shape(const char *filename, std::vector<Vector3f>& vertices, std::vector<Tuple3u>& faces, std::vector<Vector3f>& normals);
 	
 	// Texture loading functions
 	void load_text(const char *filename);

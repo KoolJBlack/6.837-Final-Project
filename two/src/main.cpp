@@ -30,26 +30,30 @@ int main( int argc, char* argv[] )
     // - step size for slider
     // - initial slider value
 
-	const int NUM_JOINTS = 18;
+	const int NUM_FACES = 11;
 
-	ModelerControl controls[ NUM_JOINTS*3 ];
-	string jointNames[NUM_JOINTS]={ "Root", "Chest", "Waist", "Neck", "Right hip", "Right leg", "Right knee", "Right foot", "Left hip", "Left leg", "Left knee", "Left foot", "Right collarbone", "Right shoulder", "Right elbow", "Left collarbone", "Left shoulder", "Left elbow" };
-	for(unsigned int i = 0; i < NUM_JOINTS; i++)
+	ModelerControl controls[ NUM_FACES ];
+	string faceNames[NUM_FACES]={ "Head", "Left Smile", "Right Smile", "Left Frown", "Right Frown", "Left Eye Closed", "Right Eye Closed", 
+		"Left Eyebrow Up", "Right Eyebrow Up", "Left Eyebrow Down", "Right Eyebrow Down" };
+	for(unsigned int i = 0; i < NUM_FACES; i++)
 	{
 		char buf[255];
-		sprintf(buf, "%s X", jointNames[i].c_str());
-		controls[i*3] = ModelerControl(buf, -M_PI, M_PI, 0.1f, 0);
+		sprintf(buf, "%s", faceNames[i].c_str());
+		controls[i] = ModelerControl(buf, 0.0f, 1.0f, 0.1f, i == 0);
+
+		/*
 		sprintf(buf, "%s Y", jointNames[i].c_str());
 		controls[i*3+1] = ModelerControl(buf, -M_PI, M_PI, 0.1f, 0);
 		sprintf(buf, "%s Z", jointNames[i].c_str());
 		controls[i*3+2] = ModelerControl(buf, -M_PI, M_PI, 0.1f, 0);
+		*/
 	}
 
     ModelerApplication::Instance()->Init
 	(
 		argc, argv,
 		controls,
-		NUM_JOINTS*3
+		NUM_FACES
 	);
 
     // Run the modeler application.

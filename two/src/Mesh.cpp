@@ -12,20 +12,32 @@ void Mesh::setCamera(Camera * c) {
 
 void Mesh::load_mesh( const char* filename )
 {
-	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
-
+	// check if we are loading a single .obj file or all blendshapes
+	string f = string(filename);
+	string objString = f + ".obj";
+	bool useShapes = false;
 	// Add your code here.
-	ifstream in(filename);
-    if (!in) {
-        cerr<< filename << " not found\a" << endl;
-        exit(0);
+	ifstream in(objString.c_str());
+    if (in) {
+        cerr << endl << "*** Mesh::load reading in file " << objString.c_str() << " ***" << endl;
     }
-
-    cerr << endl << "*** Mesh::load reading in file " << filename << " ***" << endl;
-
+	else {
+		objString = f + "/Head.obj";
+		ifstream in(objString.c_str());
+		if (in){
+			cerr << endl << "*** Mesh::load reading in blend shapes " << objString.c_str() << " ***" << endl;
+			useShapes = true;
+		}
+		else{
+			cerr << objString << " not found. exiting." << endl;
+			exit(0);
+		}	
+	}
+	
+	ifstream in1(objString.c_str());
     // load the OBJ file here
     string line;
-    while (std::getline(in, line)) {
+    while (std::getline(in1, line)) {
         // Parse line values through string stream.
         stringstream ss(line);
         string s;
@@ -34,7 +46,7 @@ void Mesh::load_mesh( const char* filename )
         if (s == "v") {
             Vector3f v;
             ss >> v[0] >> v[1] >> v[2];
-            bindVertices.push_back(v);
+            currentVertices.push_back(v);
             // Set the default color
             vertexColors.push_back(Vector3f(1.0,1.0,1.0));
         } else if (s == "f") {
@@ -85,16 +97,54 @@ void Mesh::load_mesh( const char* filename )
         }
     } 
     // end while cin
-    cerr << "bindVertices size " << bindVertices.size() << endl;
+    cerr << "currentVertices size " << currentVertices.size() << endl;
     cerr << "textCoords size " << textureCoords.size() << endl;
     cerr << "faces size " << faces.size() << endl;
     cerr << "normals size " << vertexNormals.size() << endl;
 
-	// make a copy of the bind vertices as the current vertices
-	currentVertices = bindVertices;
 
 	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
+		// TODO: fill this in. 
+	}
 
+    // Load the texture if possible
+	
+	// load the headshape as the default
+	HeadShape.b_vertices = currentVertices;
+	HeadShape.b_faces = faces;
+	HeadShape.b_normals = vertexNormals;
+
+    if (useShapes){
+		// hardcoding this part to fit the blend shapes we are using. 
+
+		string LFrown = f + "/LFrown.obj";
+		string LSmile = f + "/LSmile.obj";
+		string LEyebrowUp = f + "/LEyebrowUp.obj";
+		string LEyebrowDown = f + "/LEyebrowDown.obj";
+		string LEyeClose = f + "/LEyeClose.obj";
+		string RFrown = f + "/RFrown.obj";
+		string RSmile = f + "/RSmile.obj";
+		string REyebrowUp = f + "/REyebrowUp.obj";
+		string REyebrowDown = f + "/REyebrowDown.obj";
+		string REyeClose = f + "/REyeClose.obj";
+		
+		m_blendShapes[1] = BlendShape::load_shape(LSmile.c_str(), LSmileShape);		
+		m_blendShapes[2] = BlendShape::load_shape(RSmile.c_str(), RSmileShape);
+		m_blendShapes[3] = BlendShape::load_shape(LFrown.c_str(), LFrownShape); 
+		m_blendShapes[4] = BlendShape::load_shape(RFrown.c_str(), RFrownShape); 
+		m_blendShapes[5] = BlendShape::load_shape(LEyeClose.c_str(), LEyeCloseShape);
+		m_blendShapes[6] = BlendShape::load_shape(REyeClose.c_str(), REyeCloseShape);		
+		m_blendShapes[7] = BlendShape::load_shape(LEyebrowUp.c_str(), LEyebrowUpShape);
+		m_blendShapes[8] = BlendShape::load_shape(REyebrowUp.c_str(), REyebrowUpShape);
+		m_blendShapes[9] = BlendShape::load_shape(LEyebrowDown.c_str(), LEyebrowDownShape);
+		m_blendShapes[10] = BlendShape::load_shape(REyebrowDown.c_str(), REyebrowDownShape);
+		
+		m_blendShapes[0] = HeadShape;
+	}
+	else{
+		for(int i = 0; i < 11; i++){
+			m_blendShapes[i] = HeadShape;
+		}
 	}
 
 }
@@ -289,7 +339,11 @@ void Mesh::draw_mesh() {
         Vector3f c2 = vertexColors[face[1][0] - 1];
         Vector3f c3 = vertexColors[face[2][0] - 1];
         // Calculate normal
+		// TODO: let's see if we can use the normals given to us -- issue: it gives weird lighting
         Vector3f n = Vector3f::cross(v2 - v1, v3 - v1).normalized();
+		//Vector3f n1 = vertexNormals[face[0] - 1];
+		//Vector3f n2 = vertexNormals[face[1] - 1];
+		//Vector3f n3 = vertexNormals[face[2] - 1];
 
         // Draw with or without texturing
         if (m_texture_init) {
