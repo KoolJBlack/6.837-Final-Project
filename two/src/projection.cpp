@@ -1,9 +1,14 @@
-#include "projection.h"  
+#include "projection.h"
+#include "Mesh.h"
+
+
 using namespace std;
 
+Projection::Projection() {
 
+}
 
-Projection::Projection(const Vector3f& center, const Vector3f& target, const Vector3f& up, float fov, float aspect, Mesh* m,Texture* t) {
+Projection::Projection(const Vector3f& center, const Vector3f& target, const Vector3f& up, float fov, float aspect, Mesh* m) {
 	m_center = center;
 	m_target = target;
     m_direction = (target - center).normalized();
@@ -14,7 +19,6 @@ Projection::Projection(const Vector3f& center, const Vector3f& target, const Vec
     m_aspect = aspect; // x over y
 
     m_base_mesh = m;
-    m_t = t;
 
     // Init projection matrices
     m_view_mat = Matrix4f::lookAt(center, target, up);
@@ -40,6 +44,11 @@ void Projection::resetTextureMatrix() {
     m_text_mat = m_bias * m_proj_mat * m_view_mat.inverse();
 }
 
+void Projection::loadTexture(const char* filename ){
+	m_t.load(filename);
+}
+
+
 void Projection::initTextureCoords() {
 	// Get the mesh vertices
 	std::vector< Vector3f > vertices = m_base_mesh->currentVertices;
@@ -64,7 +73,7 @@ Vector2f Projection::getTextureCoord(int vertexIndex) {
 }
 
 Texture* Projection::getTexture(){
-	return m_t;
+	return &m_t;
 }
 
 void Projection::setVertexBlendWeights(std::vector<float> weights) {

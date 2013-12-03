@@ -4,12 +4,15 @@
 #include "extra.h"
 #include <vector>
 #include <cmath>
-#include "Mesh.h"
+//#include "Mesh.h"
 #include <iostream>
+
+class Mesh;
 
 class Projection {
 public:
-  Projection(const Vector3f& center, const Vector3f& target, const Vector3f& up, float fov, float aspect, Mesh* m,Texture* t);
+  Projection();
+  Projection(const Vector3f& center, const Vector3f& target, const Vector3f& up, float fov, float aspect, Mesh* m);
   ~Projection();
 
   // Setup projection matrices
@@ -17,12 +20,13 @@ public:
   void resetTextureMatrix();
 
   // Initialized the texture coordinates for the base mesh
+  void loadTexture(const char* filename );
   void initTextureCoords();
   Vector2f computeUV(Vector3f v);
 
   // UV text coordinate accessor
   Vector2f getTextureCoord(int vertexIndex);
-  Texture* getTexture();
+  Texture * getTexture();
 
   // Blend weight getters/setters
   void setVertexBlendWeights(std::vector<float> weights);
@@ -35,7 +39,7 @@ public:
 
 private:
   // Mesh and texture members
-  Texture* m_t;
+  Texture m_t;
   Mesh* m_base_mesh;
 
   // Texture coordinates

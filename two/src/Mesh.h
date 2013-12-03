@@ -12,6 +12,7 @@
 #include "texture.h"
 #include "camera.h"
 #include "BlendShape.h"
+#include "projection.h"
 
 typedef tuple< unsigned, 3 > Tuple3u;
 
@@ -81,11 +82,14 @@ struct Mesh {
 	void load_shape(const char *filename, std::vector<Vector3f>& vertices, std::vector<Tuple3u>& faces, std::vector<Vector3f>& normals);
 	
 	// Texture loading functions
-	void load_text(const char *filename);
+	//void load_text(const char *filename);
+	// Projection loading functions
+	void init_projections_with_textures(const char* filename );
 
 	// Texture initialization
 	void init_text();
 	void init_projective_text();
+
 
 	// compute the normals if they are not given in the object file
 	void compute_norm();
@@ -99,8 +103,11 @@ struct Mesh {
 	// this method should update m_mesh.attachments
 	void loadAttachments( const char* filename, int numJoints );
 
+	// Projection elements
+	Projection p;
+
 	// Texture elements
-	Texture t;
+	Texture* t;
 	bool m_texture_init;
 	bool m_projected_init;
 

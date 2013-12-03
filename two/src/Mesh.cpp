@@ -5,7 +5,6 @@
 
 using namespace std;
 
-
 void Mesh::setCamera(Camera * c) {
     m_camera = c;
 }
@@ -153,9 +152,28 @@ void Mesh::load_mesh( const char* filename )
 
 }
 
+/*
 void Mesh::load_text(const char* filename ) {
     t.load(filename);
     cerr << "texture width " << t.getWidth() << " height " << t.getHeight() << endl;
+    m_texture_init = false;
+    m_projected_init = false;
+}
+*/
+
+void Mesh::init_projections_with_textures(const char* filename ){
+    // Projeciton parameters
+    Vector3f center(0.0,0.0,5.0);
+    Vector3f target(0.0,0.0,0.0);
+    Vector3f up = Vector3f::UP;
+    float fov = 15.0;
+    float aspect = 1.0;
+    p = Projection(center, target, up, fov, aspect, this);
+    p.initTextureCoords();
+    // Load the texture
+    p.loadTexture(filename);
+    t = p.getTexture();
+
     m_texture_init = false;
     m_projected_init = false;
 }
@@ -181,9 +199,9 @@ void Mesh::init_text() {
     //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // Set the GL texture
-    GLubyte* image = t.getGLTexture();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
-                 t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
+    GLubyte* image = t->getGLTexture();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t->getWidth(), 
+                 t->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
                  image); 
     delete [] image;
 
@@ -207,9 +225,9 @@ void Mesh::init_projective_text() {
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear Filtering
 
     // Set the GL texture
-    GLubyte* image = t.getGLTexture();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
-                 t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
+    GLubyte* image = t->getGLTexture();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t->getWidth(), 
+                 t->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
                  image); 
     delete [] image;
 
@@ -291,10 +309,13 @@ void Mesh::project_texture() {
 void Mesh::draw() {
     // Init the texture if it hasn't been done yet
     // This is a hack because texture loading can only be done after the window is created
-    if (t.valid() && !m_texture_init ) {
+    if (t->valid() && !m_texture_init ) {
         //init_text();
     } 
-    if (t.valid() && !m_projected_init ) {
+    if (t->valid() && !m_projected_init ) {
+        init_projective_text();
+    }
+    if (t->valid() && !m_projected_init ) {
         init_projective_text();
     } 
 
