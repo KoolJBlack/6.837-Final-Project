@@ -25,7 +25,7 @@ ModelerView::ModelerView(int x, int y, int w, int h,
     m_camera->SetCenter( Vector3f( 0, 0, 0 ) ); 
 
 	m_drawAxes = true;
-	m_drawSkeleton = true;
+	//m_drawSkeleton = true;
 
 }
 

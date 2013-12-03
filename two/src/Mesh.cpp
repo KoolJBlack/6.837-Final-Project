@@ -150,6 +150,10 @@ void Mesh::load_mesh( const char* filename )
 		}
 	}
 
+	// once loaded, we can create a View object from the neutral mesh object
+	// TODO: not sure if the projections are loaded yet at this point. 
+	m_viewObj = new Views(currentVertices, projections);
+
 }
 
 /*
@@ -233,7 +237,8 @@ void Mesh::init_projective_text() {
 // TODO: pass in a list of projections 
 void Mesh::create_frame_buffer(int viewNum)
 {
-	
+	// TODO: reset the weights using the View given by the camera
+	m_viewObj->calculate_weights(m_camera->GetCenter());
 
 	/*
 	// the texture we're going to render to
@@ -361,7 +366,7 @@ void Mesh::create_frame_buffer(int viewNum)
 	//clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	draw_mesh(); // but with all of the colors == 0.0;
+	draw_mesh(false); // but with all of the colors == 0.0;
 
 	// unbind FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -652,7 +657,9 @@ void Mesh::draw() {
 
 
     if (m_projected_init) {	
-		create_frame_buffer(2);
+		// TODO: this shouldn't be in draw. should only happen when the camera moves
+		// we need to draw using the created texture map during blendshapes
+		create_frame_buffer(2); 
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
@@ -661,7 +668,7 @@ void Mesh::draw() {
     }
 
     // Draw the mesh and texture that we project onto
-    draw_mesh();
+    draw_mesh(true);
 
     if (m_projected_init) {
       glDisable(GL_TEXTURE_2D);
@@ -674,7 +681,7 @@ void Mesh::draw() {
 
 }
 
-void Mesh::draw_mesh() {
+void Mesh::draw_mesh(bool useTexture) {
     // Enable texturing
     
     if (m_texture_init) {
@@ -704,7 +711,8 @@ void Mesh::draw_mesh() {
 		//Vector3f n3 = vertexNormals[face[2] - 1];
 
         // Draw with or without texturing
-        if (m_texture_init) {
+        //if (m_texture_init) {
+		if (useTexture) {
             // Read texture coordinates
             //Vector2f t1 = textureCoords[face[0][1] - 1]; 
             //Vector2f t2 = textureCoords[face[1][1] - 1]; 

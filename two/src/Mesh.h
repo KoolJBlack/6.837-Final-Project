@@ -15,6 +15,7 @@
 #include "camera.h"
 #include "BlendShape.h"
 #include "projection.h"
+#include "views.h"
 
 typedef tuple< unsigned, 3 > Tuple3u;
 
@@ -103,7 +104,7 @@ struct Mesh {
 
 	// Draw the current mesh and texture projections
 	void draw();
-	void draw_mesh();
+	void draw_mesh(bool useTexture);
 	void project_texture();
 
 	// 2.2. Implement this method to load the per-vertex attachment weights
@@ -125,6 +126,9 @@ struct Mesh {
 
   	// Camera info
   	Camera *m_camera;
+
+	// Views object
+	Views *m_viewObj;
 
 };
 
