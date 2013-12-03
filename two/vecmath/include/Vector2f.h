@@ -1,5 +1,6 @@
 #ifndef VECTOR_2F_H
 #define VECTOR_2F_H
+#include <iostream>
 
 #include <cmath>
 
@@ -87,5 +88,12 @@ Vector2f operator / ( const Vector2f& v, float f );
 
 bool operator == ( const Vector2f& v0, const Vector2f& v1 );
 bool operator != ( const Vector2f& v0, const Vector2f& v1 );
+
+inline std::ostream& operator << ( std::ostream& os, const Vector2f& v)
+{
+    os << "Vector2f <" << v[0] << ", " << v[1] << ">";
+    return os;
+}
+
 
 #endif // VECTOR_2F_H

@@ -25,7 +25,7 @@ project(assignment)
   includedirs {"vecmath/include"}
   
   if not os.is("windows") then
-    linkoptions {[[`if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl"; else echo "-lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;`]]}
+    linkoptions {[[`if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl"; else echo "-lGLEW -lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;`]]}
   else
     links {"freeglut", "fltk", "fltkgl", "fltkforms", "fltkimages", "fltkzlib", "fltkjpeg", "fltkpng"}
     includedirs {"include"}
@@ -34,7 +34,7 @@ project(assignment)
   links {"vecmath"}
   
   configuration { "Debug*" }
-    defines { "_DEBUG", "DEBUG" }
+    defines { "_DEBUG", "DEBUG" } 
     flags   { "Symbols" }
     if not os.is("windows") then
       postbuildcommands {"cp debug/" .. assignment .. " " .. assignment}

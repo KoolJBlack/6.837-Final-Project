@@ -5,9 +5,12 @@
 
 using namespace std;
 
-
 void Mesh::setCamera(Camera * c) {
     m_camera = c;
+}
+
+Camera * Mesh::getCamera() {
+    return m_camera;
 }
 
 void Mesh::load_mesh( const char* filename )
@@ -149,9 +152,29 @@ void Mesh::load_mesh( const char* filename )
 
 }
 
+/*
 void Mesh::load_text(const char* filename ) {
     t.load(filename);
     cerr << "texture width " << t.getWidth() << " height " << t.getHeight() << endl;
+    m_texture_init = false;
+    m_projected_init = false;
+}
+*/
+
+void Mesh::init_projections_with_textures(const char* filename ){
+    // Projeciton parameters
+    Vector3f center(0.0,0.0,5.0);
+    Vector3f target(0.0,0.0,0.0);
+    Vector3f up = Vector3f::UP;
+    float fov = 15.0;
+    float aspect = 1.0;
+    p = Projection(center, target, up, fov, aspect, this);
+    p.updateTextureMatrix(m_camera->viewMatrix());
+    p.initTextureCoords();
+    // Load the texture
+    p.loadTexture(filename);
+    t = p.getTexture();
+
     m_texture_init = false;
     m_projected_init = false;
 }
@@ -168,18 +191,18 @@ void Mesh::init_text() {
     // Nice trilinear filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
     
     // Creat the GL texture data
     //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // Set the GL texture
-    GLubyte* image = t.getGLTexture();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
-                 t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
+    GLubyte* image = t->getGLTexture();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t->getWidth(), 
+                 t->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
                  image); 
     delete [] image;
 
@@ -243,9 +266,9 @@ void Mesh::create_frame_buffer()
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear Filtering
 
     // Set the GL texture
-    GLubyte* image = t.getGLTexture();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t.getWidth(), 
-                 t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
+    GLubyte* image = t->getGLTexture();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t->getWidth(), 
+                 t->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
                  image); 
     delete [] image;
 
@@ -358,12 +381,13 @@ void Mesh::project_texture() {
 void Mesh::draw() {
     // Init the texture if it hasn't been done yet
     // This is a hack because texture loading can only be done after the window is created
-    if (t.valid() && !m_texture_init ) {
-        //init_text();
+    if (t->valid() && !m_texture_init ) {
+        init_text();
     } 
-    if (t.valid() && !m_projected_init ) {
-        init_projective_text();
-    } 
+    if (t->valid() && !m_projected_init ) {
+        //init_projective_text();
+    }
+
 
     if (m_projected_init) {	
 		create_frame_buffer();
@@ -420,9 +444,15 @@ void Mesh::draw_mesh() {
         // Draw with or without texturing
         if (m_texture_init) {
             // Read texture coordinates
-            Vector2f t1 = textureCoords[face[0][1] - 1]; 
-            Vector2f t2 = textureCoords[face[1][1] - 1]; 
-            Vector2f t3 = textureCoords[face[2][1] - 1]; 
+            //Vector2f t1 = textureCoords[face[0][1] - 1]; 
+            //Vector2f t2 = textureCoords[face[1][1] - 1]; 
+            //Vector2f t3 = textureCoords[face[2][1] - 1];
+            if (p.textCoordsValid()){
+
+            }
+            Vector2f t1 = p.getTextureCoord(face[0][0] - 1); 
+            Vector2f t2 = p.getTextureCoord(face[1][0] - 1); 
+            Vector2f t3 = p.getTextureCoord(face[2][0] - 1); 
             //cerr << "texcoord1 " <<t1[0] << " " << t1[1] << endl;
             //cerr << "texcoord2 " <<t2[0] << " " << t2[1] << endl;
             //cerr << "texcoord3 " <<t3[0] << " " << t3[1] << endl;
