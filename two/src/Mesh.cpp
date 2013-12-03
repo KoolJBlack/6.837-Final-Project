@@ -613,6 +613,16 @@ void Mesh::project_texture() {
 }
 
 
+void Mesh::update() {
+    // Update blend weights
+    updateProjectionBlendWeights();
+}
+
+void Mesh::updateProjectionBlendWeights(){
+
+}
+
+
 void Mesh::draw() {
     // Init the texture if it hasn't been done yet
     // This is a hack because texture loading can only be done after the window is created

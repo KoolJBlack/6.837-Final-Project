@@ -30,6 +30,7 @@ public:
 
   // Blend weight getters/setters
   void setVertexBlendWeights(std::vector<float> weights);
+  void setVertexBlendWeight(int vertexIndex, float weight);
   std::vector<float> getVertexBlendWeights();
   float getVertexBlendWeight(int vertexIndex);
 

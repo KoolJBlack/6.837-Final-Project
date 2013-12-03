@@ -20,6 +20,9 @@ Projection::Projection(const Vector3f& center, const Vector3f& target, const Vec
 
     m_base_mesh = m;
 
+    // Init the vertex blend weight list
+    m_vertexBlendWeights = std::vector<float>(m_base_mesh->currentVertices.size());
+
     // Init projection matrices
     m_view_mat = Matrix4f::lookAt(center, target, up);
     m_proj_mat = Matrix4f::perspectiveProjection(m_fov, aspect, 5, 7, false);
@@ -93,6 +96,11 @@ Texture* Projection::getTexture(){
 void Projection::setVertexBlendWeights(std::vector<float> weights) {
 	m_vertexBlendWeights = weights;
 }
+
+void Projection::setVertexBlendWeight(int vertexIndex, float weight) {
+	m_vertexBlendWeights[vertexIndex] = weight;
+}
+
 
 std::vector<float> Projection::getVertexBlendWeights() {
 	return m_vertexBlendWeights;

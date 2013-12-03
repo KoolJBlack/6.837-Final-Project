@@ -132,6 +132,10 @@ void ModelerView::update()
 	// update the mesh from sliders
 	updateBlendShapes();
 
+	// Update the mesh data
+	m_mesh.update();
+
+
 	// Kai commented all of this out...
 	// update the skeleton from sliders
 	//updateJoints();

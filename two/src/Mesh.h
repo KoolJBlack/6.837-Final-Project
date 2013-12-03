@@ -97,6 +97,10 @@ struct Mesh {
 	// compute the normals if they are not given in the object file
 	void compute_norm();
 
+	// Update data
+	void update();
+	void updateProjectionBlendWeights();
+
 	// Draw the current mesh and texture projections
 	void draw();
 	void draw_mesh();
