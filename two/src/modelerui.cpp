@@ -24,7 +24,7 @@ if (filename)
 //	while (!m_modelerWindow->shown());
 	m_modelerView->draw();
 	m_modelerView->make_current();
-m_modelerView->draw();
+	m_modelerView->draw();
 	
 		
 	unsigned char *imageBuffer = new unsigned char[3*w*h];
@@ -196,6 +196,8 @@ ModelerUserInterface::ModelerUserInterface() {
     }
     o->end();
   }
+
+  
 }
 
 void ModelerUserInterface::show() {

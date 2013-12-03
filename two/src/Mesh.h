@@ -1,6 +1,8 @@
 #ifndef MESH_H
 #define MESH_H
 
+
+
 #include <vector>
 #include <vecmath.h>
 #include <cstdlib>
@@ -89,6 +91,7 @@ struct Mesh {
 	// Texture initialization
 	void init_text();
 	void init_projective_text();
+	void create_frame_buffer();
 
 
 	// compute the normals if they are not given in the object file

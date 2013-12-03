@@ -125,6 +125,8 @@ void ModelerApplication::Init( int argc, char* argv[],
     m_ui->m_modelerView = new ModelerView(0, 0, m_ui->m_modelerWindow->w(), m_ui->m_modelerWindow->h(), NULL);
     m_ui->m_modelerView->loadModel(argc, argv);
 
+	
+
     Fl_Group::current()->resizable(m_ui->m_modelerView);
     m_ui->m_modelerWindow->end();
 }
@@ -147,7 +149,10 @@ int ModelerApplication::Run()
     
     // Just tell FLTK to go for it.
     Fl::visual(FL_RGB | FL_DOUBLE);
+
+
     m_ui->show();
+	
 
     return Fl::run();
 }

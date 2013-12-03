@@ -212,6 +212,34 @@ void Mesh::init_text() {
 }
 
 void Mesh::init_projective_text() {
+
+	
+	// Kai trying out frame buffers
+
+	// adding glewInit ??? how does this work?
+	glewExperimental=GL_TRUE;
+	GLenum err=glewInit();
+	if (err!= GLEW_OK) {
+		cerr << "Glew init fail :( " << endl;
+	}
+	//glewInit();
+
+	
+    m_projected_init = true;
+    cerr << "projected initialized " << endl;
+
+}
+
+void Mesh::create_frame_buffer()
+{
+	
+	GLuint framebuf0 = 0;
+	glGenFramebuffers(1, &framebuf0);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
+
+	// the texture we're going to render to
+	// using what Kojo had before. 
+
     // Create one OpenGL textures
     glGenTextures(1, &texture2ID);
 
@@ -224,6 +252,9 @@ void Mesh::init_projective_text() {
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Linear Filtering
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear Filtering
+
+	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Linear Filtering
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Set the GL texture
     GLubyte* image = t->getGLTexture();
@@ -251,10 +282,45 @@ void Mesh::init_projective_text() {
     glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGenfv(GL_Q, GL_EYE_PLANE, m.getRow(3));
 
-    m_projected_init = true;
-    cerr << "projected initialized " << endl;
-}
 
+	// end Kojo's create texture
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture2ID, 0);
+
+	
+	// depth buffer
+	GLuint depthrenderbuffer;
+	glGenRenderbuffers(1, &depthrenderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
+	//	GL_RENDERBUFFER, depthrenderbuffer);
+
+	// configure frame buffer
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture2ID, 0);
+		
+
+	// set the list of draw buffers
+	GLenum Drawbuffers[1] = {GL_COLOR_ATTACHMENT0};
+	glDrawBuffers(1, Drawbuffers);
+
+	
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		//return false;
+		cout << "should return false" << endl;
+	}
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
+	//glViewport(0,0,600,600);
+
+	project_texture();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 
 /*
@@ -295,15 +361,14 @@ void Mesh::compute_norm()
 void Mesh::project_texture() {
     glMatrixMode(GL_TEXTURE);
     glLoadIdentity();
-    //glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
-    //glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
-    gluPerspective(45, 1, 5, 7);  // projector "projection" and view matrices
-    gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
+    glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
+    glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
+    gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
+    gluLookAt (5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     //glMultMatrixf( m_camera->viewMatrix() );
     //glMultMatrixf(m_camera->GetRotation().inverse());
     glMultMatrixf(Matrix4f::translation(-m_camera->GetCenter()).inverse());
-    glMultMatrixf(m_camera->GetRotation().inverse());
+    //glMultMatrixf(m_camera->GetRotation().inverse());
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -319,14 +384,13 @@ void Mesh::draw() {
     }
 
 
-    if (m_projected_init) {
-        glBindTexture(GL_TEXTURE_2D, texture2ID);
+    if (m_projected_init) {	
+		create_frame_buffer();
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
         glEnable(GL_TEXTURE_GEN_Q);
-        project_texture();
     }
 
     // Draw the mesh and texture that we project onto
@@ -411,7 +475,7 @@ void Mesh::draw_mesh() {
             //glDisable (GL_LIGHTING);
             //glEnable(GL_COLOR_MATERIAL);
             glBegin(GL_TRIANGLES);
-            glColor3fv(c1);
+            glColor3fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
             glNormal3fv(n);
             glVertex3fv(v1);
             glColor3fv(c2);

@@ -28,7 +28,7 @@ ifeq ($(config),debug)
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -std=c++0x
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += `if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl"; else echo "-lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;` -Ldebug
+  LDFLAGS   += `if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl"; else echo "-lGLEW -lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;` -Ldebug
   LIBS      += -lvecmath
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += debug/libvecmath.a
@@ -52,7 +52,7 @@ ifeq ($(config),release)
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -std=c++0x
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -s `if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl"; else echo "-lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;` -Lrelease
+  LDFLAGS   += -s `if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl"; else echo "-lGLEW -lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;` -Lrelease
   LIBS      += -lvecmath
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += release/libvecmath.a
