@@ -26,9 +26,9 @@ ifeq ($(config),debug)
   DEFINES   += -D_DEBUG -DDEBUG
   INCLUDES  += -Ivecmath/include
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
-  CFLAGS    += $(CPPFLAGS) $(ARCH) -g -std=c++0x
+  CFLAGS    += $(CPPFLAGS) $(ARCH) -g
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += `if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl"; else echo "-lGLEW -lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;` -Ldebug
+  LDFLAGS   += `if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl -lGLEW"; else echo "-lGLEW -lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;` -Ldebug
   LIBS      += -lvecmath
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += debug/libvecmath.a
@@ -50,9 +50,9 @@ ifeq ($(config),release)
   DEFINES   += -DNDEBUG
   INCLUDES  += -Ivecmath/include
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
-  CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -std=c++0x
+  CFLAGS    += $(CPPFLAGS) $(ARCH) -O2
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -s `if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl"; else echo "-lGLEW -lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;` -Lrelease
+  LDFLAGS   += -s `if [ "\`uname\`" = "Darwin" ]; then echo "-framework OpenGL -framework GLUT -framework Cocoa -framework AGL -framework Carbon -lfltk -lfltk_gl -lGLEW"; else echo "-lGLEW -lGL -lGLU -lglut "; fltk-config --use-gl --ldflags; fi;` -Lrelease
   LIBS      += -lvecmath
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += release/libvecmath.a
@@ -68,19 +68,19 @@ ifeq ($(config),release)
 endif
 
 OBJECTS := \
+	$(OBJDIR)/bitmap.o \
 	$(OBJDIR)/BlendShape.o \
+	$(OBJDIR)/camera.o \
 	$(OBJDIR)/Joint.o \
+	$(OBJDIR)/main.o \
 	$(OBJDIR)/MatrixStack.o \
 	$(OBJDIR)/Mesh.o \
-	$(OBJDIR)/ModelerView.o \
-	$(OBJDIR)/SkeletalModel.o \
-	$(OBJDIR)/bitmap.o \
-	$(OBJDIR)/camera.o \
-	$(OBJDIR)/main.o \
 	$(OBJDIR)/modelerapp.o \
 	$(OBJDIR)/modelerui.o \
-	$(OBJDIR)/texture.o \
+	$(OBJDIR)/ModelerView.o \
 	$(OBJDIR)/projection.o \
+	$(OBJDIR)/SkeletalModel.o \
+	$(OBJDIR)/texture.o \
 
 RESOURCES := \
 
@@ -141,10 +141,19 @@ $(GCH): $(PCH)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 endif
 
+$(OBJDIR)/bitmap.o: src/bitmap.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/BlendShape.o: src/BlendShape.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/camera.o: src/camera.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/Joint.o: src/Joint.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/main.o: src/main.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/MatrixStack.o: src/MatrixStack.cpp
@@ -153,31 +162,22 @@ $(OBJDIR)/MatrixStack.o: src/MatrixStack.cpp
 $(OBJDIR)/Mesh.o: src/Mesh.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/ModelerView.o: src/ModelerView.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/SkeletalModel.o: src/SkeletalModel.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/bitmap.o: src/bitmap.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/camera.o: src/camera.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/main.o: src/main.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/modelerapp.o: src/modelerapp.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/modelerui.o: src/modelerui.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/texture.o: src/texture.cpp
+$(OBJDIR)/ModelerView.o: src/ModelerView.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/projection.o: src/projection.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/SkeletalModel.o: src/SkeletalModel.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/texture.o: src/texture.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 
