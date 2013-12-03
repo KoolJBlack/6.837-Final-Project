@@ -625,7 +625,7 @@ void Mesh::draw() {
 
 
     if (m_projected_init) {	
-		create_frame_buffer();
+		create_frame_buffer(2);
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
