@@ -8,6 +8,7 @@ Camera::Camera()
 {
     mStartRot = Matrix4f::identity();
     mCurrentRot = Matrix4f::identity();
+	mUpdated = true;
 }
 
 void Camera::SetDimensions(int w, int h)
@@ -83,6 +84,7 @@ void Camera::MouseDrag(int x, int y)
     default:
         break;
     }
+	mUpdated = true;
 }
 
 
@@ -253,4 +255,13 @@ void Camera::DistanceZoom(int x, int y)
 
     // exponential zoom factor
     mCurrentDistance = mStartDistance * exp(delta);  
+}
+
+
+bool Camera::isUpdated() {
+	return mUpdated;
+}
+
+void Camera::resetUpdated() {
+	mUpdated = false;
 }

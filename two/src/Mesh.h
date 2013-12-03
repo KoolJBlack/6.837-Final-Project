@@ -111,6 +111,7 @@ struct Mesh {
 	void loadAttachments( const char* filename, int numJoints );
 
 	// Projection elements
+	std::vector<Projection> projections;
 	Projection p;
 
 	// Texture elements

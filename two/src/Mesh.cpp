@@ -619,7 +619,24 @@ void Mesh::update() {
 }
 
 void Mesh::updateProjectionBlendWeights(){
+	// Only process is the view has changed
+	if (!m_camera->isUpdated()) {
+		return;
+	}
+	m_camera->resetUpdated();
 
+	
+
+	// Iterate through all of the faces. For each projection on each face, 
+	// Compute the weights based on camera viewing dir and the incoming
+	// 
+    for(unsigned int index=0; index < faces.size(); index++) {
+        vector<Tuple3u> face = faces[index];
+        // Read verticies
+        Vector3f v1 = currentVertices[face[0][0] - 1];
+        Vector3f v2 = currentVertices[face[1][0] - 1];
+        Vector3f v3 = currentVertices[face[2][0] - 1];
+	}
 }
 
 

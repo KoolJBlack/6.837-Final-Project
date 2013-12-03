@@ -49,6 +49,10 @@ public:
     Vector3f GetCenter() const { return mCurrentCenter; }
     Matrix4f GetRotation() const { return mCurrentRot; }
     float GetDistance() const { return mCurrentDistance; }
+
+	// Check updated state
+	bool isUpdated();
+	void resetUpdated();
     
 private:
 
@@ -56,6 +60,7 @@ private:
     int     mDimensions[2];
     int     mStartClick[2];
     Button  mButtonState;
+	bool mUpdated;
 
     // For rotation
     Matrix4f mStartRot;
@@ -74,6 +79,7 @@ private:
     void ArcBallRotation(int x, int y);
     void PlaneTranslation(int x, int y);
     void DistanceZoom(int x, int y);
+
 };
 
 #endif
