@@ -91,7 +91,7 @@ struct Mesh {
 	// Texture initialization
 	void init_text();
 	void init_projective_text();
-	void create_frame_buffer();
+	void create_frame_buffer(int viewNum);
 
 
 	// compute the normals if they are not given in the object file
