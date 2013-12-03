@@ -72,6 +72,7 @@ struct Mesh {
 	std::vector< std::vector< float > > attachments;
 
 	void setCamera(Camera * c);
+	Camera * getCamera();
 
 	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
 	void load_mesh(const char *filename);

@@ -23,7 +23,19 @@ Projection::~Projection() {
 }
 
 void Projection::initTextureCoords() {
+	// Get the mesh vertices
+	std::vector< Vector3f > vertices = m_base_mesh->currentVertices;
+	// Reset texture coordinates
+	m_textureCoords = std::vector<Vector2f>();
+	// For each vertex, generate its UV coordinaats
+	for(unsigned int index=0; index < vertices.size(); index++) {
+		Vector3f vertex = vertices[index];
+		m_textureCoords.push_back(computeUV(vertex));
+	}
+}
 
+Vector2f Projection::computeUV(Vector3f v){
+	Vector3f dir = dirToVertex(v);
 }
 
 
@@ -49,6 +61,10 @@ float Projection::getVertexBlendWeight(int vertexIndex) {
 
 Vector3f Projection::dirToProjection(Vector3f vertex) {
 	return (m_center - vertex).normalized();
+}
+
+Vector3f Projection::dirToVertex(Vector3f vertex) {
+	return (vertex - m_center).normalized();
 }
 
 

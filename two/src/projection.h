@@ -14,6 +14,7 @@ public:
 
   // Initialized the texture coordinates for the base mesh
   void initTextureCoords();
+  Vector2f computeUV(Vector3f v);
 
   // UV text coordinate accessor
   Vector2f getTextureCoord(int vertexIndex);
@@ -26,6 +27,7 @@ public:
 
   // Returns the vertex to center of projection vector (normalized)
   Vector3f dirToProjection(Vector3f vertex);
+  Vector3f dirToVertex(Vector3f vertex);
 
 private:
   // Mesh and texture members
