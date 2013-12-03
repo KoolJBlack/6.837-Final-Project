@@ -68,18 +68,19 @@ ifeq ($(config),release)
 endif
 
 OBJECTS := \
-	$(OBJDIR)/bitmap.o \
 	$(OBJDIR)/BlendShape.o \
-	$(OBJDIR)/camera.o \
 	$(OBJDIR)/Joint.o \
-	$(OBJDIR)/main.o \
 	$(OBJDIR)/MatrixStack.o \
 	$(OBJDIR)/Mesh.o \
-	$(OBJDIR)/modelerapp.o \
-	$(OBJDIR)/modelerui.o \
 	$(OBJDIR)/ModelerView.o \
 	$(OBJDIR)/SkeletalModel.o \
+	$(OBJDIR)/bitmap.o \
+	$(OBJDIR)/camera.o \
+	$(OBJDIR)/main.o \
+	$(OBJDIR)/modelerapp.o \
+	$(OBJDIR)/modelerui.o \
 	$(OBJDIR)/texture.o \
+	$(OBJDIR)/projection.o \
 
 RESOURCES := \
 
@@ -140,19 +141,10 @@ $(GCH): $(PCH)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 endif
 
-$(OBJDIR)/bitmap.o: src/bitmap.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/BlendShape.o: src/BlendShape.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/camera.o: src/camera.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/Joint.o: src/Joint.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/main.o: src/main.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/MatrixStack.o: src/MatrixStack.cpp
@@ -161,19 +153,31 @@ $(OBJDIR)/MatrixStack.o: src/MatrixStack.cpp
 $(OBJDIR)/Mesh.o: src/Mesh.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/modelerapp.o: src/modelerapp.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/modelerui.o: src/modelerui.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/ModelerView.o: src/ModelerView.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/SkeletalModel.o: src/SkeletalModel.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/bitmap.o: src/bitmap.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/camera.o: src/camera.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/main.o: src/main.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/modelerapp.o: src/modelerapp.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/modelerui.o: src/modelerui.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/texture.o: src/texture.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/projection.o: src/projection.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 

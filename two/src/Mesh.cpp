@@ -274,7 +274,7 @@ void Mesh::project_texture() {
     glLoadIdentity();
     glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
     glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
-    gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
+    gluPerspective(45, 1, 5, 7);  // projector "projection" and view matrices
     gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     //glMultMatrixf( m_camera->viewMatrix() );
     //glMultMatrixf(m_camera->GetRotation().inverse());

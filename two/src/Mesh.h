@@ -9,7 +9,7 @@
 #include <sstream>
 #include "extra.h"
 #include "tuple.h"
-#include "Texture.h"
+#include "texture.h"
 #include "camera.h"
 #include "BlendShape.h"
 
