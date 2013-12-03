@@ -230,17 +230,14 @@ void Mesh::init_projective_text() {
 
 }
 
-void Mesh::create_frame_buffer()
+// TODO: pass in a list of projections 
+void Mesh::create_frame_buffer(int viewNum)
 {
 	
-	GLuint framebuf0 = 0;
-	glGenFramebuffers(1, &framebuf0);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
 
+	/*
 	// the texture we're going to render to
 	// using what Kojo had before. 
-
-	
 
     // Create one OpenGL textures
     glGenTextures(1, &texture2ID);
@@ -249,14 +246,7 @@ void Mesh::create_frame_buffer()
 	glActiveTexture(GL_TEXTURE);
     glBindTexture(GL_TEXTURE_2D, texture2ID);
 	
-	glMatrixMode(GL_TEXTURE);
-    glLoadIdentity();
-    glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
-    glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
-    gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
-    gluLookAt (5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-    glMultMatrixf(Matrix4f::translation(-m_camera->GetCenter()).inverse());
-    glMatrixMode(GL_MODELVIEW);
+	project_texture();
 
     // Nice trilinear filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -290,27 +280,70 @@ void Mesh::create_frame_buffer()
 
     glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGenfv(GL_Q, GL_EYE_PLANE, m.getRow(3));
-
-
+	
 	// end Kojo's create texture
+
+	*/
+	/*
+	// render texture that's color only so that we can see if we can get weights on. as color.
+	GLuint texColorBuffer;
+	glGenTextures(1, &texColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 600, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+
+	*/
+
+
+	// Initial frame buffer stuff. Before loop happens.
+	GLuint framebuf0;
+	glGenFramebuffers(1, &framebuf0);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
+
+	// create a texture object
+	GLuint textureId;
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 600, 600, 0,
+				 GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+
 	
 	// depth buffer
 	GLuint depthrenderbuffer;
 	glGenRenderbuffers(1, &depthrenderbuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+
+	//attach the texture to FBO color attachment point
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture2ID, 0);
+	//attach the renderbuffer to depth attachment point
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+
 	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
 	//	GL_RENDERBUFFER, depthrenderbuffer);
 
 	// configure frame buffer
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture2ID, 0);
+	//glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture2ID, 0);
 		
 
 	// set the list of draw buffers
-	GLenum Drawbuffers[2] = {GL_COLOR_ATTACHMENT0};
-	glDrawBuffers(1, Drawbuffers);
+	//GLenum Drawbuffers[2] = {GL_COLOR_ATTACHMENT0};
+	//glDrawBuffers(1, Drawbuffers);
 
 	
 
@@ -319,11 +352,213 @@ void Mesh::create_frame_buffer()
 		cout << "should return false" << endl;
 	}
 
+	//switch back to window-system-provided frame buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//set rendering destination to FBO	
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
 
+	//clear buffers
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	draw_mesh(); // but with all of the colors == 0.0;
+
+	// unbind FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
+	
+	//loop stuff
+	for (int j = 0; j < viewNum; j++){
 
+		// stuff for blending? not sure how to use without shaders. 
+
+		/*
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE); // first arg should be either src_alpha or gl_one
+		glShadeModel(GL_SMOOTH); // need to look into this
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+
+		// display
+		glClear(GL_COLOR_BUFFER_BIT);
+		draw_mesh(); // with the given uv projection for texture
+		glFlush();
+
+		*/
+
+
+		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
+
+
+		// create two framebuffers first so that we can get textures to multiply
+		GLuint fbuf0;
+		glGenFramebuffers(1, &fbuf0);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbuf0);
+		GLuint tex0; // make this the image texture from the view 
+
+		glGenTextures(1, &tex0);
+		glBindTexture(GL_TEXTURE0, tex0);
+		glTexParameterf(GL_TEXTURE0, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE0, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameterf(GL_TEXTURE0, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE0, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE0, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+		glTexImage2D(GL_TEXTURE0, 0, GL_RGBA8, 600, 600, 0,
+				 GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+		
+
+			// depth buffer
+		GLuint drbuf0;
+		glGenRenderbuffers(1, &drbuf0);
+		glBindRenderbuffer(GL_RENDERBUFFER, drbuf0);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+
+		//attach the texture to FBO color attachment point
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex0, 0);
+		//attach the renderbuffer to depth attachment point
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, drbuf0);
+
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			//return false;
+			cout << "should return false" << endl;
+		}
+
+		//switch back to window-system-provided frame buffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//set rendering destination to FBO	
+		glBindFramebuffer(GL_FRAMEBUFFER, fbuf0);
+
+		//clear buffers
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// TODO: draw mesh with the uv projection and bind that to texture0...
+
+		// unbind FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
+
+		// end render to texture for view image
+
+
+
+		GLuint fbuf1;
+		glGenFramebuffers(1, &fbuf1);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbuf1); 
+		GLuint tex1; // this the color/weight  texture. 
+
+		glGenTextures(1, &tex1);
+		glBindTexture(GL_TEXTURE1, tex1);
+		glTexParameterf(GL_TEXTURE1, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE1, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameterf(GL_TEXTURE1, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE1, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE1, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+		glTexImage2D(GL_TEXTURE1, 0, GL_RGBA8, 600, 600, 0,
+				 GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+
+		// depth buffer
+		GLuint drbuf1;
+		glGenRenderbuffers(1, &drbuf1);
+		glBindRenderbuffer(GL_RENDERBUFFER, drbuf1);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+
+		//attach the texture to FBO color attachment point
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, tex1, 0);
+		//attach the renderbuffer to depth attachment point
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, drbuf1);
+
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			//return false;
+			cout << "should return false" << endl;
+		}
+
+		//switch back to window-system-provided frame buffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//set rendering destination to FBO	
+		glBindFramebuffer(GL_FRAMEBUFFER, fbuf1);
+
+		//clear buffers
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+		// TODO: draw the mesh with the weights and bind that to the texture1...
+		
+		// unbind FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
+
+		// end render to texture for color/weight
+
+		// begin the process of combining the textures 
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, tex0);
+		//Simply sample the texture
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		//------------------------
+		glActiveTexture(GL_TEXTURE1);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, tex1);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+		//Sample RGB, multiply by previous texunit result
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);   //Modulate RGB with RGB
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+		//Sample ALPHA, multiply by previous texunit result -- maybe not necessary for this project
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);  //Modulate ALPHA with ALPHA
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+
+
+		// TODO: add this to framebuf0, our cumulative buffer
+		// can possibly use add textures...
+		// textureID is the cumulative texture in framebuf0
+
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, textureID); // TODO: need to pull texture from cumulative frame buffer...
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		//------------------------
+		glActiveTexture(GL_TEXTURE1);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, tex0); // TODO: need to find the result of multiplying is. 
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);    //Add RGB with RGB
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+		//------------------------
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_ADD);    //Add ALPHA with ALPHA
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+
+		// clean up by discarding the frame buffers
+
+	}
+
+	
+
+	//glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
+	//glViewport(0,0,600,600);
+
+
+	//GL_FUNC_ADD(GL_ONE, GL_ONE);
 
 }
 
@@ -481,6 +716,7 @@ void Mesh::draw_mesh() {
             //glEnable(GL_COLOR_MATERIAL);
             glBegin(GL_TRIANGLES);
             glColor3fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
+			//glColor4fv(Vector4f(c1, 0.2));
             glNormal3fv(n);
             glVertex3fv(v1);
             glColor3fv(c2);
