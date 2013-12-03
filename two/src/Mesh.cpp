@@ -529,7 +529,7 @@ void Mesh::create_frame_buffer(int viewNum)
 
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, textureID); // TODO: need to pull texture from cumulative frame buffer...
+		//glBindTexture(GL_TEXTURE_2D, textureID); // TODO: need to pull texture from cumulative frame buffer...
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 		//------------------------
 		glActiveTexture(GL_TEXTURE1);
