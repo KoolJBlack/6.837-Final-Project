@@ -20,7 +20,7 @@ ModelerView::ModelerView(int x, int y, int w, int h,
     m_camera->SetDimensions( w, h );
     m_camera->SetDistance( 5);
     //m_camera->SetCenter( Vector3f( 0.5, 0.5, 0.5 ) );
-    m_camera->SetCenter( Vector3f( 0, 0, 0 ) );
+    m_camera->SetCenter( Vector3f( 0, 0, 0 ) ); 
 
 	m_drawAxes = true;
 	m_drawSkeleton = true;
@@ -31,6 +31,8 @@ ModelerView::ModelerView(int x, int y, int w, int h,
 void ModelerView::loadModel(int argc, char* argv[])
 {
 	glutInit( &argc, argv );
+
+	
 
 	// Load the model based on the command-line arguments
 	string prefix = argv[ 1 ];

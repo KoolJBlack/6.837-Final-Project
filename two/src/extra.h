@@ -5,6 +5,9 @@
 #include <windows.h>
 #endif
 
+#include <GL/glew.h>
+//#pragma comment(lib, "glew32.lib")
+
 #if __APPLE__
 #include <GLUT/glut.h>
 #else

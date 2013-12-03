@@ -189,6 +189,26 @@ void Mesh::init_text() {
 }
 
 void Mesh::init_projective_text() {
+
+	
+	// Kai trying out frame buffers
+
+	// adding glewInit ??? how does this work?
+	glewExperimental=GL_TRUE;
+	GLenum err=glewInit();
+	if (err!= GLEW_OK) {
+		cerr << "Glew init fail :( " << endl;
+	}
+	//glewInit();
+
+
+	GLuint framebuf0 = 0;
+	glGenFramebuffers(1, &framebuf0); //ugh breaks at this line
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
+
+	// the texture we're going to render to
+	// using what Kojo had before. 
+
     // Create one OpenGL textures
     glGenTextures(1, &texture2ID);
 
@@ -228,8 +248,45 @@ void Mesh::init_projective_text() {
     glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
     glTexGenfv(GL_Q, GL_EYE_PLANE, m.getRow(3));
 
+
+	// end Kojo's create texture
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture2ID, 0);
+
+	
+	// depth buffer
+	GLuint depthrenderbuffer;
+	glGenRenderbuffers(1, &depthrenderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
+	//	GL_RENDERBUFFER, depthrenderbuffer);
+
+
+	// configure frame buffer
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture2ID, 0);
+
+
+	// set the list of draw buffers
+	GLenum Drawbuffers[1] = {GL_COLOR_ATTACHMENT0};
+	glDrawBuffers(1, Drawbuffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		//return false;
+		cout << "should return false" << endl;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
+	glViewport(0,0,600,600);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
     m_projected_init = true;
     cerr << "projected initialized " << endl;
+
 }
 
 
@@ -380,7 +437,7 @@ void Mesh::draw_mesh() {
             //glDisable (GL_LIGHTING);
             //glEnable(GL_COLOR_MATERIAL);
             glBegin(GL_TRIANGLES);
-            glColor3fv(c1);
+            glColor3fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
             glNormal3fv(n);
             glVertex3fv(v1);
             glColor3fv(c2);
