@@ -12,6 +12,10 @@ public:
   Projection(const Vector3f& center, const Vector3f& target, const Vector3f& up, float fov, float aspect, Mesh* m,Texture* t);
   ~Projection();
 
+  // Setup projection matrices
+  void updateTextureMatrix(Matrix4f model_mat );
+  void resetTextureMatrix();
+
   // Initialized the texture coordinates for the base mesh
   void initTextureCoords();
   Vector2f computeUV(Vector3f v);
@@ -44,11 +48,16 @@ private:
   Vector3f m_direction;
   Vector3f m_up;
   Vector3f m_right;
+  Vector3f m_target;
 
   float m_fov;
   float m_tanf;
   float m_aspect;
-  Matrix4f m_transform;
+  Matrix4f m_view_mat;
+  Matrix4f m_proj_mat;
+  Matrix4f m_bias;
+  Matrix4f m_text_mat;
+
 };
 
 #endif

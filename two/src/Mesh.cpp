@@ -10,7 +10,7 @@ void Mesh::setCamera(Camera * c) {
     m_camera = c;
 }
 
-Camera * Mesh::getcamera() {
+Camera * Mesh::getCamera() {
     return m_camera;
 }
 
