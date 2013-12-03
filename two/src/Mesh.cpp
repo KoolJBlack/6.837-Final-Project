@@ -201,9 +201,17 @@ void Mesh::init_projective_text() {
 	}
 	//glewInit();
 
+	
+    m_projected_init = true;
+    cerr << "projected initialized " << endl;
 
+}
+
+void Mesh::create_frame_buffer()
+{
+	
 	GLuint framebuf0 = 0;
-	glGenFramebuffers(1, &framebuf0); //ugh breaks at this line
+	glGenFramebuffers(1, &framebuf0);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
 
 	// the texture we're going to render to
@@ -221,6 +229,9 @@ void Mesh::init_projective_text() {
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Linear Filtering
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear Filtering
+
+	//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Linear Filtering
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Set the GL texture
     GLubyte* image = t.getGLTexture();
@@ -264,31 +275,29 @@ void Mesh::init_projective_text() {
 	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
 	//	GL_RENDERBUFFER, depthrenderbuffer);
 
-
 	// configure frame buffer
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture2ID, 0);
-
+		
 
 	// set the list of draw buffers
 	GLenum Drawbuffers[1] = {GL_COLOR_ATTACHMENT0};
 	glDrawBuffers(1, Drawbuffers);
+
+	
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		//return false;
 		cout << "should return false" << endl;
 	}
 
+
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
-	glViewport(0,0,600,600);
+	//glViewport(0,0,600,600);
+
+	project_texture();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-    m_projected_init = true;
-    cerr << "projected initialized " << endl;
-
 }
-
 
 
 /*
@@ -332,11 +341,11 @@ void Mesh::project_texture() {
     glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
     glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
     gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
-    gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt (5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
     //glMultMatrixf( m_camera->viewMatrix() );
     //glMultMatrixf(m_camera->GetRotation().inverse());
     glMultMatrixf(Matrix4f::translation(-m_camera->GetCenter()).inverse());
-    glMultMatrixf(m_camera->GetRotation().inverse());
+    //glMultMatrixf(m_camera->GetRotation().inverse());
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -351,14 +360,13 @@ void Mesh::draw() {
         init_projective_text();
     } 
 
-    if (m_projected_init) {
-        glBindTexture(GL_TEXTURE_2D, texture2ID);
+    if (m_projected_init) {	
+		create_frame_buffer();
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_TEXTURE_GEN_S);
         glEnable(GL_TEXTURE_GEN_T);
         glEnable(GL_TEXTURE_GEN_R);
         glEnable(GL_TEXTURE_GEN_Q);
-        project_texture();
     }
 
     // Draw the mesh and texture that we project onto
