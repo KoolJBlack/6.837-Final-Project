@@ -4,7 +4,6 @@
 #include "extra.h"
 #include <vector>
 #include <cmath>
-//#include "Mesh.h"
 #include <iostream>
 
 class Mesh;
@@ -22,6 +21,7 @@ public:
   // Initialized the texture coordinates for the base mesh
   void loadTexture(const char* filename );
   void initTextureCoords();
+  bool textCoordsValid();
   Vector2f computeUV(Vector3f v);
 
   // UV text coordinate accessor
@@ -44,6 +44,7 @@ private:
 
   // Texture coordinates
   std::vector< Vector2f > m_textureCoords;
+  bool m_texture_coords_init;
   // Blend weights
   std::vector< float > m_vertexBlendWeights;
 

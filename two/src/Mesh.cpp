@@ -169,6 +169,7 @@ void Mesh::init_projections_with_textures(const char* filename ){
     float fov = 15.0;
     float aspect = 1.0;
     p = Projection(center, target, up, fov, aspect, this);
+    p.updateTextureMatrix(m_camera->viewMatrix());
     p.initTextureCoords();
     // Load the texture
     p.loadTexture(filename);
@@ -190,10 +191,10 @@ void Mesh::init_text() {
     // Nice trilinear filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
     
     // Creat the GL texture data
     //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -294,10 +295,11 @@ void Mesh::compute_norm()
 void Mesh::project_texture() {
     glMatrixMode(GL_TEXTURE);
     glLoadIdentity();
-    glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
-    glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
-    gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
+    //glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
+    //glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
+    gluPerspective(45, 1, 5, 7);  // projector "projection" and view matrices
     gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
     //glMultMatrixf( m_camera->viewMatrix() );
     //glMultMatrixf(m_camera->GetRotation().inverse());
     glMultMatrixf(Matrix4f::translation(-m_camera->GetCenter()).inverse());
@@ -310,14 +312,12 @@ void Mesh::draw() {
     // Init the texture if it hasn't been done yet
     // This is a hack because texture loading can only be done after the window is created
     if (t->valid() && !m_texture_init ) {
-        //init_text();
+        init_text();
     } 
     if (t->valid() && !m_projected_init ) {
-        init_projective_text();
+        //init_projective_text();
     }
-    if (t->valid() && !m_projected_init ) {
-        init_projective_text();
-    } 
+
 
     if (m_projected_init) {
         glBindTexture(GL_TEXTURE_2D, texture2ID);
@@ -375,9 +375,15 @@ void Mesh::draw_mesh() {
         // Draw with or without texturing
         if (m_texture_init) {
             // Read texture coordinates
-            Vector2f t1 = textureCoords[face[0][1] - 1]; 
-            Vector2f t2 = textureCoords[face[1][1] - 1]; 
-            Vector2f t3 = textureCoords[face[2][1] - 1]; 
+            //Vector2f t1 = textureCoords[face[0][1] - 1]; 
+            //Vector2f t2 = textureCoords[face[1][1] - 1]; 
+            //Vector2f t3 = textureCoords[face[2][1] - 1];
+            if (p.textCoordsValid()){
+
+            }
+            Vector2f t1 = p.getTextureCoord(face[0][0] - 1); 
+            Vector2f t2 = p.getTextureCoord(face[1][0] - 1); 
+            Vector2f t3 = p.getTextureCoord(face[2][0] - 1); 
             //cerr << "texcoord1 " <<t1[0] << " " << t1[1] << endl;
             //cerr << "texcoord2 " <<t2[0] << " " << t2[1] << endl;
             //cerr << "texcoord3 " <<t3[0] << " " << t3[1] << endl;

@@ -16,7 +16,9 @@ ModelerView::ModelerView(int x, int y, int w, int h,
 			 const char *label):Fl_Gl_Window(x, y, w, h, label)
 {
     m_camera = new Camera();	
-
+	// Pass the camera to mesh
+	m_mesh.setCamera(m_camera);
+	
     m_camera->SetDimensions( w, h );
     m_camera->SetDistance( 5);
     //m_camera->SetCenter( Vector3f( 0.5, 0.5, 0.5 ) );
@@ -49,8 +51,7 @@ void ModelerView::loadModel(int argc, char* argv[])
 	m_mesh.init_projections_with_textures(textFile.c_str());
 	//m_mesh.load_text("data/Steve.bmp");
 
-	// Pass the camera to mesh
-	m_mesh.setCamera(m_camera);
+
 }
 
 ModelerView::~ModelerView()

@@ -3,4 +3,5 @@ make
 #gdb --args ./debug/a2 data/Steve
 #./debug/a2 data/Steve
 ./debug/a2 data/Cube
+#gdb --args ./debug/a2 data/Cube
 
