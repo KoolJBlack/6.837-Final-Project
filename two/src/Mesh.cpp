@@ -624,13 +624,13 @@ void Mesh::update() {
 }
 
 void Mesh::updateProjectionBlendWeights(){
-	// Only process is the view has changed
+	// Only process is the camera has changed
 	if (!m_camera->isUpdated()) {
 		return;
 	}
 	m_camera->resetUpdated();
 
-	
+    Vector3f d = m_camera->getViewingDir();
 
 	// Iterate through all of the faces. For each projection on each face, 
 	// Compute the weights based on camera viewing dir and the incoming

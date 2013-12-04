@@ -246,6 +246,12 @@ Matrix4f Camera::viewMatrix() const
 	*/
 }
 
+Vector3f Camera::getViewingDir() const {
+    Vector4f dir = Vector4f(0,0,-1, 0);
+    dir = (mCurrentRot * Matrix4f::translation( -mCurrentCenter ) ).inverse() * dir;
+    return dir.xyz().normalized();
+}
+
 void Camera::DistanceZoom(int x, int y)
 {
     int sy = mStartClick[1] - mViewport[1];

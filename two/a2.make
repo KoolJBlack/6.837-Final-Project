@@ -71,7 +71,6 @@ OBJECTS := \
 	$(OBJDIR)/bitmap.o \
 	$(OBJDIR)/BlendShape.o \
 	$(OBJDIR)/camera.o \
-	$(OBJDIR)/Joint.o \
 	$(OBJDIR)/main.o \
 	$(OBJDIR)/MatrixStack.o \
 	$(OBJDIR)/Mesh.o \
@@ -79,8 +78,8 @@ OBJECTS := \
 	$(OBJDIR)/modelerui.o \
 	$(OBJDIR)/ModelerView.o \
 	$(OBJDIR)/projection.o \
-	$(OBJDIR)/SkeletalModel.o \
 	$(OBJDIR)/texture.o \
+	$(OBJDIR)/Views.o \
 
 RESOURCES := \
 
@@ -150,9 +149,6 @@ $(OBJDIR)/BlendShape.o: src/BlendShape.cpp
 $(OBJDIR)/camera.o: src/camera.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/Joint.o: src/Joint.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/main.o: src/main.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
@@ -174,10 +170,10 @@ $(OBJDIR)/ModelerView.o: src/ModelerView.cpp
 $(OBJDIR)/projection.o: src/projection.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/SkeletalModel.o: src/SkeletalModel.cpp
+$(OBJDIR)/texture.o: src/texture.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/texture.o: src/texture.cpp
+$(OBJDIR)/Views.o: src/Views.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 

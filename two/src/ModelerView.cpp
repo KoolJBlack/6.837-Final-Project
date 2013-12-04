@@ -26,7 +26,6 @@ ModelerView::ModelerView(int x, int y, int w, int h,
 
 	m_drawAxes = true;
 	//m_drawSkeleton = true;
-
 }
 
 // If you want to load files, etc, do that here.
@@ -34,14 +33,10 @@ void ModelerView::loadModel(int argc, char* argv[])
 {
 	glutInit( &argc, argv );
 
-	
-
 	// Load the model based on the command-line arguments
 	string prefix = argv[ 1 ];
-	//string skeletonFile = prefix + ".skel";
 	string meshFile = prefix + ".obj";
 	string textFile = prefix + ".bmp";
-	//string attachmentsFile = prefix + ".attach";
 
 	//TODO: we only want to load meshes, so get rid of the skeleton...
 	//model.load(skeletonFile.c_str(), meshFile.c_str(), attachmentsFile.c_str());
@@ -52,8 +47,6 @@ void ModelerView::loadModel(int argc, char* argv[])
 	// Load projections
 	m_mesh.init_projections_with_textures(textFile.c_str());
 	//m_mesh.load_text("data/Steve.bmp");
-
-
 }
 
 ModelerView::~ModelerView()
@@ -110,11 +103,6 @@ int ModelerView::handle( int event )
 				m_drawAxes = !m_drawAxes;
 				cout << "drawAxes is now: " << m_drawAxes << endl;
 			}
-			else if( key == 's' )
-			{
-				m_drawSkeleton = !m_drawSkeleton;
-				cout << "drawSkeleton is now: " << m_drawSkeleton << endl;
-			}
     	}
 		break;
 
@@ -134,18 +122,6 @@ void ModelerView::update()
 
 	// Update the mesh data
 	m_mesh.update();
-
-
-	// Kai commented all of this out...
-	// update the skeleton from sliders
-	//updateJoints();
-
-
-	// Update the bone to world transforms for SSD.
-	//model.updateCurrentJointToWorldTransforms();
-
-	// update the mesh given the new skeleton
-	//model.updateMesh();
 
 }
 
@@ -185,17 +161,6 @@ void ModelerView::updateBlendShapes()
 	
 }
 
-void ModelerView::updateJoints()
-{
-	for(unsigned int jointNo = 0; jointNo < 18; jointNo++)
-	{
-		float rx = VAL( jointNo * 3 );
-		float ry = VAL( jointNo * 3 + 1 );
-		float rz = VAL( jointNo * 3 + 2 );
-
-		model.setJointTransform(jointNo, rx, ry, rz);
-	}
-}
 
 // Call the draw function of the parent.  This sets up the
 // viewport, projection, and camera position, as well as some
@@ -257,7 +222,6 @@ void ModelerView::draw()
     	drawAxes();
     }
 
-    //model.draw( m_camera->viewMatrix(), m_drawSkeleton );
 	m_mesh.draw();
 }
 

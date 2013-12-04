@@ -9,10 +9,11 @@
 
 #include <FL/Fl_Gl_Window.H>
 #include "extra.h"
+#include "Mesh.h"
+
 class Camera;
 class ModelerView;
 
-#include "SkeletalModel.h"
 
 using namespace std;
 
@@ -35,7 +36,6 @@ public:
 	void drawAxes();
 
     Camera *m_camera;
-	SkeletalModel model;
 
 	bool m_drawAxes;
 	bool m_drawSkeleton;		// if false, the mesh is drawn instead.

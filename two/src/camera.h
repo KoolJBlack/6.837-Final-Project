@@ -40,6 +40,8 @@ public:
 	Matrix4f projectionMatrix() const;
 	Matrix4f viewMatrix() const;
 
+    Vector3f getViewingDir() const;
+
     // Set for relevant vars
     void SetCenter(const Vector3f& center);
     void SetRotation(const Matrix4f& rotation);
