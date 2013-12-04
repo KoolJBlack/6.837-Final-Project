@@ -179,7 +179,7 @@ void Mesh::init_projections_with_textures(string prefix ){
     float aspect = 1.0;
 
     // For each camera center, create projection with texture
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 1; ++i) {
         Projection * p = new Projection(centers[i], target, up, fov, aspect, this);
         p->updateTextureMatrix(m_camera->viewMatrix());
         p->initTextureCoords();
@@ -348,9 +348,11 @@ void Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text, int size){
 }
 
 void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
+    
 	for (int i = 0; i < size; ++i) {
-		stored_text[i] = new_text[i];
+		stored_text[i] += new_text[i];
 	}
+
 
 	/*
 	glActiveTexture(GL_TEXTURE0);
@@ -375,8 +377,6 @@ void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
 	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
 	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
 	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-
-	return new_text; // or return stored_text
 	*/
 }
 
@@ -459,17 +459,25 @@ void Mesh::draw() {
     if ( !m_frame_init ) {
         init_frame_buffer();
     } 
+    glDepthFunc(GL_LEQUAL);
+
+    glEnable(GL_BLEND);
+    //glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA /* GL_ZERO or GL_ONE_MINUS_SRC_ALPHA */);
 
     // For now, always draw projeciton 0 with texture
+    draw_mesh(true, 0);
+    draw_mesh(false, 0);
     //draw_mesh(false, 2);
-
+    //draw_mesh(false, 2);
 
     // Multipass rendering
 
-    multipass_render();
+    //multipass_render();
 
     // Draw final image
-    draw_image(final_image);
+    //draw_image(final_image);
 
 }
 
@@ -593,19 +601,19 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             //glEnable (GL_LIGHTING);
         } else {
 
-			Vector3f c1 = Vector3f(0.2, 0.2, 0.2);
-			Vector3f c2 = Vector3f(0.2, 0.2, 0.2);
-			Vector3f c3 = Vector3f(0.2, 0.2, 0.2);
+
+			Vector4f c1 = Vector4f(1.0, 1.0, 1.0, 1.0);
+			Vector4f c2 = Vector4f(1.0, 1.0, 1.0, 1.0);
+			Vector4f c3 = Vector4f(1.0, 1.0, 1.0, 1.0);
             glDisable (GL_LIGHTING);
-            //glEnable(GL_COLOR_MATERIAL);
             glBegin(GL_TRIANGLES);
-            glColor3fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
+            glColor4fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
             glNormal3fv(n);
             glVertex3fv(v1);
-            glColor3fv(c2);
+            glColor4fv(c2);
             glNormal3fv(n);
             glVertex3fv(v2);
-            glColor3fv(c3);
+            glColor4fv(c3);
             glNormal3fv(n);
             glVertex3fv(v3);
             glEnd();
