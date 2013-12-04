@@ -2,6 +2,7 @@
 #define SMOOTH (true)
 
 #include "helpers.h"
+#include <cassert>
 
 using namespace std;
 
@@ -153,17 +154,9 @@ void Mesh::load_mesh( const char* filename )
 	// once loaded, we can create a View object from the neutral mesh object
 	// TODO: not sure if the projections are loaded yet at this point. 
 	m_viewObj = new Views(currentVertices, projections);
-
+    //init_frame_buffer();
 }
 
-/*
-void Mesh::load_text(const char* filename ) {
-    t.load(filename);
-    cerr << "texture width " << t.getWidth() << " height " << t.getHeight() << endl;
-    m_texture_init = false;
-    m_projected_init = false;
-}
-*/
 
 void Mesh::init_projections_with_textures(const char* filename ){
     // Projeciton parameters
@@ -180,7 +173,7 @@ void Mesh::init_projections_with_textures(const char* filename ){
     t = p.getTexture();
 
     m_texture_init = false;
-    m_projected_init = false;
+    m_frame_init = false;
 }
 
 
@@ -215,8 +208,7 @@ void Mesh::init_text() {
     cerr << "texture initialized " << endl;
 }
 
-void Mesh::init_projective_text() {
-
+void Mesh::init_frame_buffer() {
 	
 	// Kai trying out frame buffers
 
@@ -228,17 +220,83 @@ void Mesh::init_projective_text() {
 	}
 	//glewInit();
 
-	
-    m_projected_init = true;
-    cerr << "projected initialized " << endl;
-
+    m_frame_init = true;
+    cerr << "texture initialized " << endl;
 }
 
 // TODO: pass in a list of projections 
-void Mesh::create_frame_buffer(int viewNum)
+GLubyte * Mesh::multipass_render(int viewNum)
 {
-	// TODO: reset the weights using the View given by the camera
-	m_viewObj->calculate_weights(m_camera->GetCenter());
+    /*
+    std::vector<> textures;
+    std::vector<> weight_textures;
+    // Render all of my textures and weights
+    for (int projecitonIndex = 0; j < projections.size(); ++projecitonIndex){
+        Projection p = projections[projecitonIndex];
+        // Clear the frame buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Render the textured image and pass in projection 
+        draw_mesh(false, projectionIndex); // but with all of the colors == 0.0;
+
+        // Read pixel data
+        GLubyte* texture_image; // image for return data
+        // Get extra values from the camra class
+        void glReadPixels(0,
+            0,
+            GLsizei width,
+            GLsizei height,
+            GLenum format,
+            GL_UNSIGNED_BYTE,
+            texture_image);
+
+        // Store in array
+        textures.push_back(texture_image);
+
+        // Clear the frame buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Render the mesh weights image mask and pass in projection 
+        draw_mesh(true, projectionIndex); // but with all of the colors == 0.0;
+
+        // Read pixel data
+        GLubyte* weights_image; // image for return data
+        // Get extra values from the camra class
+        void glReadPixels(0,
+            0,
+            GLsizei width,
+            GLsizei height,
+            GLenum format,
+            GL_UNSIGNED_BYTE,
+            weights_image);
+
+        // Store in array
+        mesh_textures.push_back(weights_image);
+    }
+
+    // It may be your responsibility to delete images returened by 
+    //glReadPixels when you're done with them. If so, simply do this:
+    delete [] image;
+
+
+    GLubyte* final_image; // image for return data
+    for (int projecitonIndex = 0; j < projections.size(); ++projecitonIndex){
+        GLubyte* texture = textures[projecitonIndex];
+        GLubyte* weights = weight_textures[projecitonIndex];
+        // Clear the frame buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Blend texture with weight mask
+        GLubyte* result = mult_textures(texture, weights);
+
+        // Add to final output
+        final_image =  add_textures(final_image, result);
+    }
+
+    // Save final image somewhere...
+
+    return;
+    */
 
 	/*
 	// the texture we're going to render to
@@ -366,7 +424,7 @@ void Mesh::create_frame_buffer(int viewNum)
 	//clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	draw_mesh(false); // but with all of the colors == 0.0;
+	//draw_mesh(false); // but with all of the colors == 0.0;
 
 	// unbind FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -602,19 +660,6 @@ void Mesh::compute_norm()
 }
 */
 
-void Mesh::project_texture() {
-    glMatrixMode(GL_TEXTURE);
-    glLoadIdentity();
-    glTranslatef(0.5, 0.5, 0.0);  // Scale and bias the [-1,1] NDC values 
-    glScalef(0.5, 0.5, 1.0);  // to the [0,1] range of the texture map
-    gluPerspective(15, 1, 5, 7);  // projector "projection" and view matrices
-    gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-    //glMultMatrixf( m_camera->viewMatrix() );
-    //glMultMatrixf(m_camera->GetRotation().inverse());
-    glMultMatrixf(Matrix4f::translation(-m_camera->GetCenter()).inverse());
-    //glMultMatrixf(m_camera->GetRotation().inverse());
-    glMatrixMode(GL_MODELVIEW);
-}
 
 
 void Mesh::update() {
@@ -629,6 +674,10 @@ void Mesh::updateProjectionBlendWeights(){
 	}
 	m_camera->resetUpdated();
 
+    // TODO: reset the weights using the View given by the camera
+    m_viewObj->calculate_weights(m_camera->GetCenter());
+
+    /*
     Vector3f d = m_camera->getViewingDir();
 
 	// Iterate through all of the faces. For each projection on each face, 
@@ -641,6 +690,7 @@ void Mesh::updateProjectionBlendWeights(){
         Vector3f v2 = currentVertices[face[1][0] - 1];
         Vector3f v3 = currentVertices[face[2][0] - 1];
 	}
+    */
 }
 
 
@@ -650,20 +700,27 @@ void Mesh::draw() {
     if (t->valid() && !m_texture_init ) {
         init_text();
     } 
-    if (t->valid() && !m_projected_init ) {
-        //init_projective_text();
-    }
+    if (t->valid() && !m_frame_init ) {
+        init_frame_buffer();
+    } 
 
+    // Multipass rendering
+    GLubyte * final_image = multipass_render(2);
 
-    // Draw the mesh and texture that we project onto
+    // Draw final image
+    draw_image(final_image);
+}
 
-
+void Mesh::draw_image(GLubyte * image) {
 
 }
 
-void Mesh::draw_mesh(bool useTexture) {
+
+void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
+    // Set the corresponding projection
+    //Projection p = projections[projectionIndex];
+
     // Enable texturing
-    
     if (m_texture_init) {
         glEnable(GL_TEXTURE_2D);
         //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
@@ -694,11 +751,8 @@ void Mesh::draw_mesh(bool useTexture) {
         //if (m_texture_init) {
 		if (useTexture) {
             // Read texture coordinates
-            //Vector2f t1 = textureCoords[face[0][1] - 1]; 
-            //Vector2f t2 = textureCoords[face[1][1] - 1]; 
-            //Vector2f t3 = textureCoords[face[2][1] - 1];
-            if (p.textCoordsValid()){
-
+            if (!p.textCoordsValid()){
+                assert(false);
             }
             Vector2f t1 = p.getTextureCoord(face[0][0] - 1); 
             Vector2f t2 = p.getTextureCoord(face[1][0] - 1); 
