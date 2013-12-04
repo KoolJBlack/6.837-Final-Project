@@ -275,14 +275,14 @@ GLuint* Mesh::multipass_render()
 		
 		free(texture_image);
 		free(weights_image);
-		delete texture_image;
-		delete weights_image;
+		delete [] texture_image;
+		delete [] weights_image;
 
         // Add to final output
         final_image =  add_textures(final_image, result);
 
 		free(result);
-		delete result;
+		delete [] result;
 		
         // Clear the frame buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -433,6 +433,37 @@ void Mesh::draw() {
 }
 
 void Mesh::draw_image(GLuint* image) {
+	// Create one OpenGL textures
+    glGenTextures(1, image);
+
+    // "Bind" the newly created texture : all futuhre texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, *image);
+
+    // Nice trilinear filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
+    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
+    
+    // Creat the GL texture data
+    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    // Set the GL texture
+    //GLubyte* image = t->getGLTexture();
+	int width = 600;
+	int height = 600;
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, 
+                 height, 0, GL_RGB, GL_UNSIGNED_BYTE, 
+                 image); 
+    //delete [] image;
+
+
+
+
+	/*
+
 	// Use this frame to draw the final texture
 	GLuint framebuf0;
 	glGenFramebuffers(1, &framebuf0);
@@ -484,6 +515,7 @@ void Mesh::draw_image(GLuint* image) {
 
 	// unbind FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	*/
 }
 
 
