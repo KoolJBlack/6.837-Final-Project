@@ -1,6 +1,9 @@
 #include "texture.h"
 #include "bitmap_image.h"
 void Texture::load(const char * filename){
+    if(bimg!=0){
+        delete bimg;
+    }
     bimg=new bitmap_image(filename);
     height = bimg->height();
     width = bimg->width();
@@ -23,6 +26,7 @@ GLubyte* Texture::getGLTexture() {
     for (int i = 0; i < h; i++) {
         for (int j = 0; j < w; j++) {
             bimg->get_pixel(j, i,red, green, blue );
+            // If meshes are upside down, flip this y
             int ii = h - i - 1;
             image[ii * w * 3+ j * 3 + 0] = (GLubyte) red;
             image[ii * w * 3+ j * 3 + 1] = (GLubyte) green;

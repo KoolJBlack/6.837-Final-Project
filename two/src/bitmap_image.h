@@ -161,7 +161,9 @@ public:
 
   ~bitmap_image()
    {
+      if (length_ != 0) {
       delete [] data_;
+    }
    }
 
    bitmap_image& operator=(const bitmap_image& image)

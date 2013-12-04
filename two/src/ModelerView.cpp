@@ -42,11 +42,10 @@ void ModelerView::loadModel(int argc, char* argv[])
 	//model.load(skeletonFile.c_str(), meshFile.c_str(), attachmentsFile.c_str());
 	//m_mesh.load_mesh(meshFile.c_str());
 	m_mesh.load_mesh(prefix.c_str());
-	// Load the texture
-	//m_mesh.load_text(textFile.c_str());
+
 	// Load projections
-	m_mesh.init_projections_with_textures(textFile.c_str());
-	//m_mesh.load_text("data/Steve.bmp");
+	m_mesh.init_projections_with_textures(textFile);
+	//m_mesh.init_projections_with_textures(prefix.c_str());
 }
 
 ModelerView::~ModelerView()

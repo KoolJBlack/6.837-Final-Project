@@ -153,24 +153,39 @@ void Mesh::load_mesh( const char* filename )
 
 	// once loaded, we can create a View object from the neutral mesh object
 	// TODO: not sure if the projections are loaded yet at this point. 
-	m_viewObj = new Views(currentVertices, projections);
+	//m_viewObj = new Views(currentVertices, projections);
     //init_frame_buffer();
 }
 
 
-void Mesh::init_projections_with_textures(const char* filename ){
+void Mesh::init_projections_with_textures(string prefix ){
+    // Define camera centers
+    Vector3f centers[] = {Vector3f(-5.0,0.0,0.0),
+                        Vector3f(-3.5,0.0,3.5),
+                        //Vector3f(0.5,0.5,1.5),
+                        Vector3f(0.0,0.0,5.0),
+                        Vector3f(3.5,0.0,3.5),
+                        Vector3f(5.0,0.0,0.0)};
+
     // Projeciton parameters
-    Vector3f center(0.0,0.0,5.0);
+    //Vector3f center(0.0,0.0,5.0);
     Vector3f target(0.0,0.0,0.0);
     Vector3f up = Vector3f::UP;
     float fov = 15.0;
     float aspect = 1.0;
-    p = Projection(center, target, up, fov, aspect, this);
-    p.updateTextureMatrix(m_camera->viewMatrix());
-    p.initTextureCoords();
-    // Load the texture
-    p.loadTexture(filename);
-    t = p.getTexture();
+
+    // For each camera center, create projection with texture
+    for (int i = 0; i < 5; ++i) {
+        Projection * p = new Projection(centers[i], target, up, fov, aspect, this);
+        p->updateTextureMatrix(m_camera->viewMatrix());
+        p->initTextureCoords();
+        // Load texture using prefix and index
+        string index = static_cast<ostringstream*>( &(ostringstream() << i) )->str();
+        string textFile = prefix + index + ".bmp";
+        p->loadTexture(prefix.c_str());
+        // Add to projeciton matrix
+        projections.push_back(p);
+    }
 
     m_texture_init = false;
     m_frame_init = false;
@@ -179,11 +194,16 @@ void Mesh::init_projections_with_textures(const char* filename ){
 
 
 void Mesh::init_text() {
+    // Initialize each projections texture
+    for (int i = 0; i < projections.size(); ++i) {
+        projections[i]->initTexture();
+    }
+
     // Create one OpenGL textures
-    glGenTextures(1, &texture1ID);
+    //glGenTextures(1, &texture1ID);
 
     // "Bind" the newly created texture : all futuhre texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, texture1ID);
+    //glBindTexture(GL_TEXTURE_2D, texture1ID);
 
     // Nice trilinear filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -197,16 +217,22 @@ void Mesh::init_text() {
     //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // Set the GL texture
-    GLubyte* image = t->getGLTexture();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t->getWidth(), 
-                 t->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
-                 image); 
-    delete [] image;
+    // GLubyte* image = t->getGLTexture();
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t->getWidth(), 
+    //              t->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
+    //              image); 
+    // delete [] image;
 
 
     m_texture_init = true;
     cerr << "texture initialized " << endl;
 }
+
+
+void Mesh::bind_projeciton_text(Projection &p) {
+    p.bindTexture();
+}
+
 
 void Mesh::init_frame_buffer() {
 	
@@ -221,7 +247,7 @@ void Mesh::init_frame_buffer() {
 	//glewInit();
 
     m_frame_init = true;
-    cerr << "texture initialized " << endl;
+    cerr << "frame buffer initialized " << endl;
 }
 
 // TODO: pass in a list of projections 
@@ -697,18 +723,21 @@ void Mesh::updateProjectionBlendWeights(){
 void Mesh::draw() {
     // Init the texture if it hasn't been done yet
     // This is a hack because texture loading can only be done after the window is created
-    if (t->valid() && !m_texture_init ) {
+    if ( !m_texture_init ) {
         init_text();
     } 
-    if (t->valid() && !m_frame_init ) {
+    if ( !m_frame_init ) {
         init_frame_buffer();
     } 
 
+    // For now, always draw projeciton 0 with texture
+    draw_mesh(true, 3);
+
     // Multipass rendering
-    GLubyte * final_image = multipass_render(2);
+    //GLubyte * final_image = multipass_render(2);
 
     // Draw final image
-    draw_image(final_image);
+    //draw_image(final_image);
 }
 
 void Mesh::draw_image(GLubyte * image) {
@@ -718,14 +747,19 @@ void Mesh::draw_image(GLubyte * image) {
 
 void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
     // Set the corresponding projection
-    //Projection p = projections[projectionIndex];
+    Projection *p = projections[projectionIndex];
+
+    p->drawProjectionCamera();
 
     // Enable texturing
     if (m_texture_init) {
+        // Enable texturing
         glEnable(GL_TEXTURE_2D);
         //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        glBindTexture(GL_TEXTURE_2D, texture1ID);
+        //glBindTexture(GL_TEXTURE_2D, texture1ID);
+        // Bind the projeciton texture
+        p->bindTexture();
     }
     
 
@@ -751,12 +785,12 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
         //if (m_texture_init) {
 		if (useTexture) {
             // Read texture coordinates
-            if (!p.textCoordsValid()){
+            if (!p->textCoordsValid()){
                 assert(false);
             }
-            Vector2f t1 = p.getTextureCoord(face[0][0] - 1); 
-            Vector2f t2 = p.getTextureCoord(face[1][0] - 1); 
-            Vector2f t3 = p.getTextureCoord(face[2][0] - 1); 
+            Vector2f t1 = p->getTextureCoord(face[0][0] - 1); 
+            Vector2f t2 = p->getTextureCoord(face[1][0] - 1); 
+            Vector2f t3 = p->getTextureCoord(face[2][0] - 1); 
             //cerr << "texcoord1 " <<t1[0] << " " << t1[1] << endl;
             //cerr << "texcoord2 " <<t2[0] << " " << t2[1] << endl;
             //cerr << "texcoord3 " <<t3[0] << " " << t3[1] << endl;

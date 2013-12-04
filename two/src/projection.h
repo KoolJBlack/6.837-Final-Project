@@ -18,8 +18,12 @@ public:
   void updateTextureMatrix(Matrix4f model_mat );
   void resetTextureMatrix();
 
-  // Initialized the texture coordinates for the base mesh
+  // Texture methods
   void loadTexture(const char* filename );
+  void initTexture();
+  void bindTexture();
+
+  // Texture coordinate methods
   void initTextureCoords();
   bool textCoordsValid();
   Vector2f computeUV(Vector3f v);
@@ -38,9 +42,13 @@ public:
   Vector3f dirToProjection(Vector3f vertex);
   Vector3f dirToVertex(Vector3f vertex);
 
+  void drawProjectionCamera();
+
 private:
   // Mesh and texture members
   Texture m_t;
+  GLuint m_textureID;
+
   Mesh* m_base_mesh;
 
   // Texture coordinates
