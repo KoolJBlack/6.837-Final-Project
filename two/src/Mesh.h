@@ -108,7 +108,7 @@ struct Mesh {
 	// Draw the current mesh and texture projections
 	void draw();
 	void draw_mesh(bool useTexture, int projectionIndex);
-	void draw_image(GLuint * image);
+	void draw_image(GLubyte * image);
 
 	// Projection elements
 	std::vector<Projection*> projections;

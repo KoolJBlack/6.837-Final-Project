@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Views::Views(vector<Vector3f>* vertices, vector<Projection>* projections){
+Views::Views(vector<Vector3f>* vertices, vector<Projection*>* projections){
 	v_vertices = vertices;
 	v_projections = projections;
 }
@@ -12,7 +12,7 @@ Views::~Views(){
 
 void Views::calculate_weights(Vector3f cam_center){
 	vector<Vector3f>& vs = *v_vertices;
-	vector<Projection>& ps = *v_projections;
+	vector<Projection*>& ps = *v_projections;
 	// use headshape and not vertices because it's the neutral shape
 
 	// look at each vertex
@@ -20,7 +20,7 @@ void Views::calculate_weights(Vector3f cam_center){
 		vector<float> weights;
 		// for each projection, find the dot product
 		for (unsigned int j = 0; j < ps.size(); j++){
-			Vector3f projDir = ps[j].dirToProjection(vs[i]);
+			Vector3f projDir = ps[j]->dirToProjection(vs[i]);
 			Vector3f camDir = (cam_center - vs[i]).normalized();
 			float w = Vector3f::dot(projDir, camDir);
 			weights.push_back(w); // not dealing with occlusion right now

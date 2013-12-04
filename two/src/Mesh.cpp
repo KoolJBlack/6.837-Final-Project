@@ -156,7 +156,7 @@ void Mesh::load_mesh( const char* filename )
 	// TODO: not sure if the projections are loaded yet at this point. 
 	//m_viewObj = new Views(currentVertices, projections);
     //init_frame_buffer();
-	projections.push_back(p); // this is temporary for testing
+	//projections.push_back(p); // this is temporary for testing
 	m_viewObj = new Views(&currentVertices, &projections);
 }
 
@@ -322,15 +322,20 @@ GLubyte* Mesh::multipass_render()
 }
 
 GLubyte* Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text){
+	GLuint tex0;
+	glGenTextures(1, &tex0);
+
+	GLuint tex1;
+	glGenTextures(1, &tex1);
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, *im_text);
+	glBindTexture(GL_TEXTURE_2D, tex0);
 	//Simply sample the texture
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	//------------------------
 	glActiveTexture(GL_TEXTURE1);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, *w_text);
+	glBindTexture(GL_TEXTURE_2D, tex1);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 	//Sample RGB, multiply by previous texunit result
 	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);   //Modulate RGB with RGB
@@ -458,7 +463,7 @@ void Mesh::draw() {
 
     // Multipass rendering
 
-    //GLuint* final_image = multipass_render();
+    GLubyte* final_image = multipass_render();
 
     // Draw final image
 
