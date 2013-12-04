@@ -107,9 +107,6 @@ struct Mesh {
 	void draw_mesh(bool useTexture);
 	void project_texture();
 
-	// 2.2. Implement this method to load the per-vertex attachment weights
-	// this method should update m_mesh.attachments
-	void loadAttachments( const char* filename, int numJoints );
 
 	// Projection elements
 	std::vector<Projection> projections;

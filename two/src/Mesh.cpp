@@ -562,7 +562,6 @@ void Mesh::create_frame_buffer(int viewNum)
 	//glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
 	//glViewport(0,0,600,600);
 
-
 	//GL_FUNC_ADD(GL_ONE, GL_ONE);
 
 }
@@ -656,27 +655,8 @@ void Mesh::draw() {
     }
 
 
-    if (m_projected_init) {	
-		// TODO: this shouldn't be in draw. should only happen when the camera moves
-		// we need to draw using the created texture map during blendshapes
-		create_frame_buffer(2); 
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_TEXTURE_GEN_S);
-        glEnable(GL_TEXTURE_GEN_T);
-        glEnable(GL_TEXTURE_GEN_R);
-        glEnable(GL_TEXTURE_GEN_Q);
-    }
-
     // Draw the mesh and texture that we project onto
-    draw_mesh(true);
 
-    if (m_projected_init) {
-      glDisable(GL_TEXTURE_2D);
-      glDisable(GL_TEXTURE_GEN_S);
-      glDisable(GL_TEXTURE_GEN_T);
-      glDisable(GL_TEXTURE_GEN_R);
-      glDisable(GL_TEXTURE_GEN_Q);
-    }
 
 
 }
@@ -771,36 +751,5 @@ void Mesh::draw_mesh(bool useTexture) {
         glDisable(GL_TEXTURE_2D);
     }
     
-}
-
-void Mesh::loadAttachments( const char* filename, int numJoints )
-{
-	// 2.2. Implement this method to load the per-vertex attachment weights
-	// this method should update m_mesh.attachments
-	// 2.1.1. load() should populate bindVertices, currentVertices, and faces
-
-	// Add your code here.
-	ifstream in(filename);
-    if (!in) {
-        cerr<< filename << " not found\a" << endl;
-        exit(0);
-    }
-
-    cerr << endl << "*** Mesh::loadAttachments reading in file " << filename << " ***" << endl;
-
-    // load the OBJ file here
-    string line;
-    while (std::getline(in, line)) {
-        // Parse line values through string stream.
-        stringstream ss(line);
-        float f;
-        vector<float> weights;
-        while (ss >> f) {
-        	weights.push_back(f);
-        }
-
-        //cerr << endl << "weights size " << weights.size() << endl;
-        attachments.push_back(weights);
-    } 
 }
 
