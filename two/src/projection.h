@@ -26,7 +26,7 @@ public:
   // Texture coordinate methods
   void initTextureCoords();
   bool textCoordsValid();
-  Vector2f computeUV(Vector3f v);
+  Vector3f computeUV(Vector3f v);
 
   // UV text coordinate accessor
   Vector2f getTextureCoord(int vertexIndex);
@@ -43,6 +43,8 @@ public:
   Vector3f dirToVertex(Vector3f vertex);
 
   void drawProjectionCamera();
+
+  bool isVertexOccluded(int vertexIndex);
 
 private:
   // Mesh and texture members

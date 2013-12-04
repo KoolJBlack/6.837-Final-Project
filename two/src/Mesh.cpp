@@ -461,13 +461,25 @@ void Mesh::draw() {
     } 
     glDepthFunc(GL_LEQUAL);
 
-    glEnable(GL_BLEND);
-    //glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA /* GL_ZERO or GL_ONE_MINUS_SRC_ALPHA */);
+
 
     // For now, always draw projeciton 0 with texture
-    draw_mesh(true, 0);
+    glDisable(GL_BLEND);
+    //draw_mesh(true, 0);
+
+    glEnable(GL_BLEND);
+    // Add
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    // Multiply
+    //glBlendFunc(GL_DST_COLOR, GL_ZERO );
+    // Subtract
+    //glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+
+    // Here we draw two meshes. If you have blending add enabled, 
+    // The color components of the meshes well add together
+    draw_mesh(false, 0);
     draw_mesh(false, 0);
     //draw_mesh(false, 2);
     //draw_mesh(false, 2);
@@ -600,11 +612,18 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             glEnd();
             //glEnable (GL_LIGHTING);
         } else {
+            Vector3f dir = m_camera->getViewingDir();
+            if(Vector3f::dot(dir, n) > 0) {
+                continue;
+            }
 
-
-			Vector4f c1 = Vector4f(1.0, 1.0, 1.0, 1.0);
-			Vector4f c2 = Vector4f(1.0, 1.0, 1.0, 1.0);
-			Vector4f c3 = Vector4f(1.0, 1.0, 1.0, 1.0);
+            // Change this
+            float brightness = 1.0;
+            // Don't change this (alpha blending is not what we want);
+            float alpha = 1.0;
+			Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);
+			Vector4f c2 = Vector4f(brightness, brightness, brightness, alpha);
+			Vector4f c3 = Vector4f(brightness, brightness, brightness, alpha);
             glDisable (GL_LIGHTING);
             glBegin(GL_TRIANGLES);
             glColor4fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.

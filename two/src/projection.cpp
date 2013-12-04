@@ -87,17 +87,18 @@ void Projection::initTextureCoords() {
 	// For each vertex, generate its UV coordinaats
 	for(unsigned int index=0; index < vertices.size(); index++) {
 		Vector3f vertex = vertices[index];
-		m_textureCoords.push_back(computeUV(vertex));
+		m_textureCoords.push_back(computeUV(vertex).xy());
 	}
 	m_texture_coords_init = true;
 	cerr << "Projection:; Text Coords Init" << endl;
 }
 
+
 bool Projection::textCoordsValid() {
 	return m_texture_coords_init;
 }
 
-Vector2f Projection::computeUV(Vector3f v){
+Vector3f Projection::computeUV(Vector3f v){
 	Vector4f strq = m_text_mat * Vector4f(v, 1.0);
 	Vector2f st = Vector2f(strq[0]/strq[3], strq[1]/strq[3]);
 	// Clamp the output texture coords
@@ -105,8 +106,8 @@ Vector2f Projection::computeUV(Vector3f v){
 	//if (st[0] > 1.0) { st[0] = 1.0; }
 	//if (st[1] < 0.0) { st[1] = 0; }
 	//if (st[1] > 1.0) { st[1] = 1.0; }
-	cerr << "UV: " << st << endl;
-	return st;
+	cerr << "UV: " << st << " and r/q " << strq[2]/strq[3] << endl;
+	return Vector3f(st, strq[2]/strq[3]);
 }
 
 
@@ -151,6 +152,10 @@ void Projection::drawProjectionCamera() {
 	glTranslatef(dir[0], dir[1], dir[2]);
 	glutSolidCube(0.25);
 	glPopMatrix();
+}
+
+bool Projection::isVertexOccluded(int vertexIndex) {
+	return false;
 }
 
 
