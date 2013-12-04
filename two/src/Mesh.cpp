@@ -108,7 +108,8 @@ void Mesh::load_mesh( const char* filename )
 
 
 	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
-		// TODO: fill this in. 
+		//compute_norm();
+		cout << "need to compute the normals" << endl;
 	}
 
     // Load the texture if possible
@@ -153,8 +154,8 @@ void Mesh::load_mesh( const char* filename )
 
 	// once loaded, we can create a View object from the neutral mesh object
 	// TODO: not sure if the projections are loaded yet at this point. 
-	m_viewObj = new Views(currentVertices, projections);
-    //init_frame_buffer();
+	projections.push_back(p); // this is temporary for testing
+	m_viewObj = new Views(&currentVertices, &projections);
 }
 
 
@@ -210,418 +211,138 @@ void Mesh::init_text() {
 
 void Mesh::init_frame_buffer() {
 	
-	// Kai trying out frame buffers
-
-	// adding glewInit ??? how does this work?
 	glewExperimental=GL_TRUE;
 	GLenum err=glewInit();
 	if (err!= GLEW_OK) {
 		cerr << "Glew init fail :( " << endl;
 	}
-	//glewInit();
 
     m_frame_init = true;
     cerr << "texture initialized " << endl;
 }
 
 // TODO: pass in a list of projections 
-GLubyte * Mesh::multipass_render(int viewNum)
+GLuint* Mesh::multipass_render()
 {
-    /*
-    std::vector<> textures;
-    std::vector<> weight_textures;
+    //arbitrary atm
+	int width = 600;
+	int height = 600;	
+    GLuint* final_image = new GLuint(); // image for return data
     // Render all of my textures and weights
-    for (int projecitonIndex = 0; j < projections.size(); ++projecitonIndex){
-        Projection p = projections[projecitonIndex];
-        // Clear the frame buffer
+	cout << "projections size = " << projections.size() << endl;
+    for (int projectionIndex = 0; projectionIndex < projections.size(); projectionIndex++){
+        Projection p = projections[projectionIndex];
+        // Clear the buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		m_texture_init = false; //temporary
         // Render the textured image and pass in projection 
         draw_mesh(false, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
-        GLubyte* texture_image; // image for return data
-        // Get extra values from the camra class
-        void glReadPixels(0,
+        GLuint* texture_image = new GLuint(); // image for return data
+        // Get extra values from the camra class 
+		
+        glReadPixels(0,
             0,
-            GLsizei width,
-            GLsizei height,
-            GLenum format,
+            width,
+            height,
+            GL_RGB,
             GL_UNSIGNED_BYTE,
             texture_image);
 
-        // Store in array
-        textures.push_back(texture_image);
-
-        // Clear the frame buffer
+        // Clear the buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Render the mesh weights image mask and pass in projection 
         draw_mesh(true, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
-        GLubyte* weights_image; // image for return data
+        GLuint* weights_image = new GLuint(); // image for return data
         // Get extra values from the camra class
-        void glReadPixels(0,
+        glReadPixels(0,
             0,
-            GLsizei width,
-            GLsizei height,
-            GLenum format,
+            width,
+            height,
+            GL_RGB,
             GL_UNSIGNED_BYTE,
             weights_image);
 
-        // Store in array
-        mesh_textures.push_back(weights_image);
-    }
 
-    // It may be your responsibility to delete images returened by 
-    //glReadPixels when you're done with them. If so, simply do this:
-    delete [] image;
-
-
-    GLubyte* final_image; // image for return data
-    for (int projecitonIndex = 0; j < projections.size(); ++projecitonIndex){
-        GLubyte* texture = textures[projecitonIndex];
-        GLubyte* weights = weight_textures[projecitonIndex];
-        // Clear the frame buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
         // Blend texture with weight mask
-        GLubyte* result = mult_textures(texture, weights);
+        GLuint* result = mult_textures(texture_image, weights_image);
+		
+		free(texture_image);
+		free(weights_image);
+		delete texture_image;
+		delete weights_image;
 
         // Add to final output
         final_image =  add_textures(final_image, result);
+
+		free(result);
+		delete result;
+		
+        // Clear the frame buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    // Save final image somewhere...
 
-    return;
-    */
+	return final_image;	
 
-	/*
-	// the texture we're going to render to
-	// using what Kojo had before. 
+}
 
-    // Create one OpenGL textures
-    glGenTextures(1, &texture2ID);
-
-    // "Bind" the newly created texture : all futuhre texture functions will modify this texture
-	glActiveTexture(GL_TEXTURE);
-    glBindTexture(GL_TEXTURE_2D, texture2ID);
+GLuint* Mesh::mult_textures(GLuint* im_text, GLuint* w_text){
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, *im_text);
+	//Simply sample the texture
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//------------------------
+	glActiveTexture(GL_TEXTURE1);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, *w_text);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+	//Sample RGB, multiply by previous texunit result
+	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);   //Modulate RGB with RGB
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+	//Sample ALPHA, multiply by previous texunit result -- maybe not necessary for this project
+	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);  //Modulate ALPHA with ALPHA
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
 	
-	project_texture();
-
-    // Nice trilinear filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Linear Filtering
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear Filtering
-
-    // Set the GL texture
-    GLubyte* image = t->getGLTexture();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t->getWidth(), 
-                 t->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
-                 image); 
-    delete [] image;
-
-    //Set up texture coordinate generation.
-    Matrix4f m =  Matrix4f::identity();
-    Matrix4f mm = Matrix4f(0.5f, 0.0f, 0.0f, 0.5f,
-                            0.0f, 0.5f, 0.0f, 0.5f,
-                            0.0f, 0.0f, 0.5f, 0.5f,
-                            0.0f, 0.0f, 0.0f, 1.0f);    
-
-    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-    glTexGenfv(GL_S, GL_EYE_PLANE, m.getRow(0));
-
-    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-    glTexGenfv(GL_T, GL_EYE_PLANE,  m.getRow(1));
-
-    glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-    glTexGenfv(GL_R, GL_EYE_PLANE, m.getRow(2));
-
-    glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-    glTexGenfv(GL_Q, GL_EYE_PLANE, m.getRow(3));
-	
-	// end Kojo's create texture
-
-	*/
-	/*
-	// render texture that's color only so that we can see if we can get weights on. as color.
-	GLuint texColorBuffer;
-	glGenTextures(1, &texColorBuffer);
-	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 600, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
-
-	*/
-
-
-	// Initial frame buffer stuff. Before loop happens.
-	GLuint framebuf0;
-	glGenFramebuffers(1, &framebuf0);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
-
-	// create a texture object
-	GLuint textureId;
-	glGenTextures(1, &textureId);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 600, 600, 0,
-				 GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-
-	
-	// depth buffer
-	GLuint depthrenderbuffer;
-	glGenRenderbuffers(1, &depthrenderbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-
-	//attach the texture to FBO color attachment point
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture2ID, 0);
-	//attach the renderbuffer to depth attachment point
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-
-
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
-	//	GL_RENDERBUFFER, depthrenderbuffer);
-
-	// configure frame buffer
-	//glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture2ID, 0);
-		
-
-	// set the list of draw buffers
-	//GLenum Drawbuffers[2] = {GL_COLOR_ATTACHMENT0};
-	//glDrawBuffers(1, Drawbuffers);
-
-	
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		//return false;
-		cout << "should return false" << endl;
-	}
-
-	//switch back to window-system-provided frame buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//set rendering destination to FBO	
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
-
-	//clear buffers
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//draw_mesh(false); // but with all of the colors == 0.0;
-
-	// unbind FBO
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
-	
-	//loop stuff
-	for (int j = 0; j < viewNum; j++){
-
-		// stuff for blending? not sure how to use without shaders. 
-
-		/*
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE); // first arg should be either src_alpha or gl_one
-		glShadeModel(GL_SMOOTH); // need to look into this
-		glClearColor(0.0, 0.0, 0.0, 0.0);
-
-		// display
-		glClear(GL_COLOR_BUFFER_BIT);
-		draw_mesh(); // with the given uv projection for texture
-		glFlush();
-
-		*/
-
-
-		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
-
-
-		// create two framebuffers first so that we can get textures to multiply
-		GLuint fbuf0;
-		glGenFramebuffers(1, &fbuf0);
-		glBindFramebuffer(GL_FRAMEBUFFER, fbuf0);
-		GLuint tex0; // make this the image texture from the view 
-
-		glGenTextures(1, &tex0);
-		glBindTexture(GL_TEXTURE0, tex0);
-		glTexParameterf(GL_TEXTURE0, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE0, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameterf(GL_TEXTURE0, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE0, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE0, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
-		glTexImage2D(GL_TEXTURE0, 0, GL_RGBA8, 600, 600, 0,
-				 GL_RGBA, GL_UNSIGNED_BYTE, 0);
-
-		
-
-			// depth buffer
-		GLuint drbuf0;
-		glGenRenderbuffers(1, &drbuf0);
-		glBindRenderbuffer(GL_RENDERBUFFER, drbuf0);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-
-		//attach the texture to FBO color attachment point
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex0, 0);
-		//attach the renderbuffer to depth attachment point
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, drbuf0);
-
-
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			//return false;
-			cout << "should return false" << endl;
-		}
-
-		//switch back to window-system-provided frame buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		//set rendering destination to FBO	
-		glBindFramebuffer(GL_FRAMEBUFFER, fbuf0);
-
-		//clear buffers
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// TODO: draw mesh with the uv projection and bind that to texture0...
-
-		// unbind FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		
-
-		// end render to texture for view image
-
-
-
-		GLuint fbuf1;
-		glGenFramebuffers(1, &fbuf1);
-		glBindFramebuffer(GL_FRAMEBUFFER, fbuf1); 
-		GLuint tex1; // this the color/weight  texture. 
-
-		glGenTextures(1, &tex1);
-		glBindTexture(GL_TEXTURE1, tex1);
-		glTexParameterf(GL_TEXTURE1, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE1, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameterf(GL_TEXTURE1, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE1, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE1, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
-		glTexImage2D(GL_TEXTURE1, 0, GL_RGBA8, 600, 600, 0,
-				 GL_RGBA, GL_UNSIGNED_BYTE, 0);
-
-
-		// depth buffer
-		GLuint drbuf1;
-		glGenRenderbuffers(1, &drbuf1);
-		glBindRenderbuffer(GL_RENDERBUFFER, drbuf1);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-
-		//attach the texture to FBO color attachment point
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, tex1, 0);
-		//attach the renderbuffer to depth attachment point
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, drbuf1);
-
-
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			//return false;
-			cout << "should return false" << endl;
-		}
-
-		//switch back to window-system-provided frame buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		//set rendering destination to FBO	
-		glBindFramebuffer(GL_FRAMEBUFFER, fbuf1);
-
-		//clear buffers
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-		// TODO: draw the mesh with the weights and bind that to the texture1...
-		
-		// unbind FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		
-
-		// end render to texture for color/weight
-
-		// begin the process of combining the textures 
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, tex0);
-		//Simply sample the texture
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		//------------------------
-		glActiveTexture(GL_TEXTURE1);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, tex1);
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-		//Sample RGB, multiply by previous texunit result
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);   //Modulate RGB with RGB
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-		//Sample ALPHA, multiply by previous texunit result -- maybe not necessary for this project
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);  //Modulate ALPHA with ALPHA
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-
-
-		// TODO: add this to framebuf0, our cumulative buffer
-		// can possibly use add textures...
-		// textureID is the cumulative texture in framebuf0
-
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-		//glBindTexture(GL_TEXTURE_2D, textureID); // TODO: need to pull texture from cumulative frame buffer...
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		//------------------------
-		glActiveTexture(GL_TEXTURE1);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, tex0); // TODO: need to find the result of multiplying is. 
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);    //Add RGB with RGB
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-		//------------------------
-		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_ADD);    //Add ALPHA with ALPHA
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
-		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-
-		// clean up by discarding the frame buffers
-
-	}
-
-	
-
-	//glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
-	//glViewport(0,0,600,600);
-
-	//GL_FUNC_ADD(GL_ONE, GL_ONE);
-
+	return im_text;
+}
+
+GLuint* Mesh::add_textures(GLuint* stored_text, GLuint* new_text){
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, *stored_text); // TODO: need to pull texture from cumulative frame buffer...
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//------------------------
+	glActiveTexture(GL_TEXTURE1);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, *new_text); // TODO: need to find the result of multiplying is. 
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);    //Add RGB with RGB
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+	//------------------------
+	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_ADD);    //Add ALPHA with ALPHA
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+
+	return new_text; // or return stored_text
 }
 
 
@@ -705,14 +426,64 @@ void Mesh::draw() {
     } 
 
     // Multipass rendering
-    GLubyte * final_image = multipass_render(2);
+    GLuint* final_image = multipass_render();
 
     // Draw final image
     draw_image(final_image);
 }
 
-void Mesh::draw_image(GLubyte * image) {
+void Mesh::draw_image(GLuint* image) {
+	// Use this frame to draw the final texture
+	GLuint framebuf0;
+	glGenFramebuffers(1, &framebuf0);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
+		
+	glGenTextures(1, image);
+	glBindTexture(GL_TEXTURE_2D, *image);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 600, 600, 0,
+				 GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
+
+	
+	// depth buffer
+	GLuint depthrenderbuffer;
+	glGenRenderbuffers(1, &depthrenderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+
+	//attach the texture to FBO color attachment point
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *image, 0);
+	//attach the renderbuffer to depth attachment point
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		//return false;
+		cout << "should return false" << endl;
+	}
+
+	//switch back to window-system-provided frame buffer
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//set rendering destination to FBO	
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
+
+	//clear buffers
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//draw_mesh(false); // but with all of the colors == 0.0;
+
+	// unbind FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
