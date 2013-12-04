@@ -30,16 +30,20 @@ void Views::calculate_weights(Vector3f cam_center){
 		int maxind[3] = {0,0,0};
 		for (unsigned int j = 1; j < ps.size(); j++){
 			if (weights[j] > weights[maxind[0]]){
+				//reset the weight first
+				weights[maxind[2]] = 0.0f;				
 				// shift the indices
 				maxind[2] = maxind[1];
 				maxind[1] = maxind[0];
-				maxind[0] = j;
+				maxind[0] = j;				
 			}
-			else if (weights[j] > weights[maxind[1]]){
+			else if (weights[j] > weights[maxind[1]]){	
+				weights[maxind[2]] = 0.0f;			
 				maxind[2] = maxind[1];
 				maxind[1] = j;
 			}
 			else if (weights[j] > weights[maxind[2]]) {
+				weights[maxind[2]] = 0.0f;	
 				maxind[2] = j;
 			}
 			else {

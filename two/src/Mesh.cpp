@@ -313,6 +313,7 @@ void Mesh::multipass_render() {
 }
 
 void Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text, int size){
+	//*im_text = *im_text & *w_text;
 	for (int i = 0; i < size; ++i) {
 		im_text[i] *= w_text[i];
 	}
@@ -349,7 +350,7 @@ void Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text, int size){
 
 void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
 	for (int i = 0; i < size; ++i) {
-		stored_text[i] = new_text[i];
+		stored_text[i] += new_text[i];
 	}
 
 	/*
