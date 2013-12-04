@@ -32,7 +32,6 @@ public:
     virtual void draw();
 
 	void updateBlendShapes();
-	void updateJoints();
 	void drawAxes();
 
     Camera *m_camera;

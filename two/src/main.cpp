@@ -41,12 +41,6 @@ int main( int argc, char* argv[] )
 		sprintf(buf, "%s", faceNames[i].c_str());
 		controls[i] = ModelerControl(buf, 0.0f, 1.0f, 0.1f, i == 0);
 
-		/*
-		sprintf(buf, "%s Y", jointNames[i].c_str());
-		controls[i*3+1] = ModelerControl(buf, -M_PI, M_PI, 0.1f, 0);
-		sprintf(buf, "%s Z", jointNames[i].c_str());
-		controls[i*3+2] = ModelerControl(buf, -M_PI, M_PI, 0.1f, 0);
-		*/
 	}
 
     ModelerApplication::Instance()->Init

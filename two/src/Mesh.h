@@ -94,8 +94,9 @@ struct Mesh {
 	// Texture initialization
 	void init_text();
 	void init_frame_buffer();
-	GLubyte * multipass_render(int viewNum);
-
+	GLuint* multipass_render();
+	GLuint* mult_textures(GLuint* im_text, GLuint* w_text);
+	GLuint* add_textures(GLuint* stored_text, GLuint* new_text);
 
 	// compute the normals if they are not given in the object file
 	void compute_norm();
@@ -107,7 +108,7 @@ struct Mesh {
 	// Draw the current mesh and texture projections
 	void draw();
 	void draw_mesh(bool useTexture, int projectionIndex);
-	void draw_image(GLubyte * image);
+	void draw_image(GLuint * image);
 
 	// Projection elements
 	std::vector<Projection*> projections;
