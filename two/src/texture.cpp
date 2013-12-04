@@ -21,16 +21,18 @@ int Texture::getHeight() {
 GLubyte* Texture::getGLTexture() {
     int w = getWidth();
     int h = getHeight();
-    GLubyte* image =  new GLubyte[h * w * 3];
+    int depth = 3;
+    GLubyte* image =  new GLubyte[h * w * depth];
     unsigned char red, green, blue;
     for (int i = 0; i < h; i++) {
         for (int j = 0; j < w; j++) {
             bimg->get_pixel(j, i,red, green, blue );
             // If meshes are upside down, flip this y
             int ii = h - i - 1;
-            image[ii * w * 3+ j * 3 + 0] = (GLubyte) red;
-            image[ii * w * 3+ j * 3 + 1] = (GLubyte) green;
-            image[ii * w * 3+ j * 3 + 2] = (GLubyte) blue;
+            image[ii * w * depth+ j * depth + 0] = (GLubyte) red;
+            image[ii * w * depth+ j * depth + 1] = (GLubyte) green;
+            image[ii * w * depth+ j * depth + 2] = (GLubyte) blue;
+            //image[ii * w * depth+ j * depth + 4] = (GLubyte) 255;
         }
     }
     return image;
