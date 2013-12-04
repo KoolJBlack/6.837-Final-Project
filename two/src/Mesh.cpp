@@ -206,7 +206,8 @@ void Mesh::init_text() {
 
     // Init the frame buffer image. Do not delete this image manually. 
     // Just call reset_final_image() when you want to clear it.
-    GLubyte* final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()];
+    reset_final_image();
+    //GLubyte* final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()];
 
     // Create one OpenGL textures
     glGenTextures(1, &tex0ID);
@@ -218,7 +219,9 @@ void Mesh::init_text() {
 }
 
 void Mesh::reset_final_image() {
-    delete[] final_image;
+    if (m_texture_init) {
+        delete[] final_image;
+    }
     final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()]; // image for return data
 }
 
