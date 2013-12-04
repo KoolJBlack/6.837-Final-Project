@@ -96,7 +96,9 @@ struct Mesh {
 	void zero_texture(GLubyte * image);
 	void init_frame_buffer();
 	void multipass_render();
-	void mult_textures(GLubyte* im_text, GLubyte* w_text, int size);
+	void getWText(int p);
+	void getIText(int p);
+	void mult_textures(GLubyte* in0, GLubyte* in1, GLubyte* out, int size);
 	void add_textures(GLubyte* stored_text, GLubyte* new_text, int size);
 
 	// compute the normals if they are not given in the object file
@@ -108,8 +110,9 @@ struct Mesh {
 
 	// Draw the current mesh and texture projections
 	void draw();
+	void draw_final(GLubyte* image, int proejectionIndex);
 	void draw_mesh(bool useTexture, int projectionIndex);
-	void draw_image(GLubyte * image);
+	void draw_image(GLubyte * image); //not using this
 	void draw_screen_quad();
 
 	// Projection elements

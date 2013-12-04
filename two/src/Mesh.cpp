@@ -166,7 +166,7 @@ void Mesh::init_projections_with_textures(string prefix ){
     Vector3f centers[] = {//Vector3f(-5.0,0.0,0.0),
 		                  //Vector3f(-3.5,0.0,3.5),
                           //Vector3f(0.5,0.5,1.5),
-                          Vector3f(0.0,0.0,5.0)};
+						  Vector3f(0.0,0.0,5.0)};
 						  //Vector3f(3.5,0.0,3.5),
                           //Vector3f(5.0,0.0,0.0)};
 
@@ -300,52 +300,73 @@ void Mesh::multipass_render() {
         //mult_textures(texture_image, weights_image, size);
 
         // Add to final output
-        add_textures(final_image, texture_image, size);
+        //add_textures(final_image, texture_image, size);
 
 
         // Clear the frame buffer
         //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-	//delete [] result;
-    //delete [] texture_image;
-    //delete [] weights_image;
 		
 }
 
-void Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text, int size){
-	//*im_text = *im_text & *w_text;
+void Mesh::getWText(int p){
+	int width = m_camera->getWidth();
+	int height = m_camera->getHeight();
+	int size = width * height * 3;
+
+	// Clear the buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Render the mesh weights image mask and pass in projection 
+    draw_mesh(false, p);
+
+    // Read pixel data
+    // Get extra values from the camra class
+    glReadPixels(0,
+        0,
+        width,
+        height,
+        GL_RGB,
+        GL_UNSIGNED_BYTE,
+        weights_image);
+
+	// Clear the buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+}
+
+void Mesh::getIText(int p){
+	int width = m_camera->getWidth();
+	int height = m_camera->getHeight();
+	int size = width * height * 3;
+
+	// Clear the buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Render the mesh weights image mask and pass in projection 
+    draw_mesh(true, p);
+
+    // Read pixel data
+    // Get extra values from the camra class
+    glReadPixels(0,
+        0,
+        width,
+        height,
+        GL_RGB,
+        GL_UNSIGNED_BYTE,
+        texture_image);
+
+	// Clear the buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+}
+
+void Mesh::mult_textures(GLubyte* in0, GLubyte* in1, GLubyte* out, int size){
 	for (int i = 0; i < size; ++i) {
-		im_text[i] *= w_text[i];
+		out[i] = (in0[i] * in1[i])/255;
 	}
 
-	/*
-	glActiveTexture(GL_TEXTURE0);
-    glClientActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, tex0ID);
-	glBindTexture(GL_TEXTURE_2D, *im_text);
-	//Simply sample the texture
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	//------------------------
-	glActiveTexture(GL_TEXTURE1);
-    glClientActiveTexture(GL_TEXTURE1);
-	glEnable(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, tex1ID);
-	glBindTexture(GL_TEXTURE_2D, *w_text);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-	//Sample RGB, multiply by previous texunit result
-	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);   //Modulate RGB with RGB
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-	//Sample ALPHA, multiply by previous texunit result -- maybe not necessary for this project
-	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);  //Modulate ALPHA with ALPHA
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-	*/
+
 }
 
 void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
@@ -353,70 +374,7 @@ void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
 	for (int i = 0; i < size; ++i) {
 		stored_text[i] += new_text[i];
 	}
-
-
-	/*
-	glActiveTexture(GL_TEXTURE0);
-    glClientActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, *stored_text); // TODO: need to pull texture from cumulative frame buffer...
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	//------------------------
-	glActiveTexture(GL_TEXTURE1);
-    glClientActiveTexture(GL_TEXTURE1);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, *new_text); // TODO: need to find the result of multiplying is. 
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);    //Add RGB with RGB
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-	//------------------------
-	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_ADD);    //Add ALPHA with ALPHA
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-	*/
 }
-
-
-/*
-void Mesh::compute_norm()
-{
-	
-	vector<Vector3f> v = currentVertices;
-	vector<Tuple3u> t = faces;
-	vector<Vector3f> n;
-
-	if (SMOOTH){
-		n.resize(v.size());
-		for(unsigned int ii=0; ii<t.size(); ii++) {
-			Vector3f a = v[t[ii][1]] - v[t[ii][0]];
-			Vector3f b = v[t[ii][2]] - v[t[ii][0]];
-			b=Vector3f::cross(a,b);
-			for(int jj=0; jj<3; jj++) {
-				n[t[ii][jj]]+=b;
-			}
-		}
-		for(unsigned int ii=0; ii<v.size(); ii++) {
-			n[ii] = n[ii]/ n[ii].abs();
-		}
-	}else{
-		n.resize(t.size());
-		for(unsigned int ii=0; ii<t.size(); ii++) {
-			Vector3f a = v[t[ii][1]] - v[t[ii][0]];
-			Vector3f b = v[t[ii][2]] - v[t[ii][0]];
-			b=Vector3f::cross(a,b);
-		  n[ii]=b.normalized();
-		}
-
-	}
-	vertexNormals = n;
-}
-*/
-
 
 
 void Mesh::update() {
@@ -460,9 +418,8 @@ void Mesh::draw() {
     if ( !m_frame_init ) {
         init_frame_buffer();
     } 
+	
     glDepthFunc(GL_LEQUAL);
-
-
 
     // For now, always draw projeciton 0 with texture
     glDisable(GL_BLEND);
@@ -470,27 +427,32 @@ void Mesh::draw() {
 
     glEnable(GL_BLEND);
     // Add
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glBlendFunc(GL_ONE, GL_ONE);
     // Multiply
     //glBlendFunc(GL_DST_COLOR, GL_ZERO );
     // Subtract
     //glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     // Here we draw two meshes. If you have blending add enabled, 
     // The color components of the meshes well add together
-    draw_mesh(false, 0);
-    draw_mesh(false, 0);
-    //draw_mesh(false, 2);
-    //draw_mesh(false, 2);
+	int width = m_camera->getWidth();
+	int height = m_camera->getHeight();
+	int size = 3 * width * height;
+	for (int i = 0; i < projections.size(); i++){
+		getIText(i);
+		getWText(i);
+		mult_textures(texture_image, weights_image, final_image, size);
+		draw_final(final_image, i);
+		//draw_mesh(true, i);
 
-    // Multipass rendering
-
-    //multipass_render();
-
-    // Draw final image
-    //draw_image(final_image);
+		// this type of clearing makes the program break early
+		//zero_texture(final_image);
+		//zero_texture(texture_image);
+		//zero_texture(weights_image);
+	}
 
 }
 
@@ -548,6 +510,56 @@ void Mesh::draw_screen_quad() {
     glMatrixMode(GL_MODELVIEW);
 }
 
+void Mesh::draw_final(GLubyte* image, int projectionIndex){
+	Projection *p = projections[projectionIndex];
+
+	// Enable texturing
+    glEnable(GL_TEXTURE_2D);
+    //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    //glBindTexture(GL_TEXTURE_2D, texture1ID);
+    // Bind the projeciton texture
+    p->bindTexture2(image);
+
+	for(unsigned int index=0; index < faces.size(); index++) {
+        vector<Tuple3u> face = faces[index];
+        // Read verticies
+        Vector3f v1 = currentVertices[face[0][0] - 1];
+        Vector3f v2 = currentVertices[face[1][0] - 1];
+        Vector3f v3 = currentVertices[face[2][0] - 1];
+        // Calculate normal
+		// TODO: let's see if we can use the normals given to us -- issue: it gives weird lighting
+        Vector3f n = Vector3f::cross(v2 - v1, v3 - v1).normalized();
+		
+        // Read texture coordinates
+        if (!p->textCoordsValid()){
+            assert(false);
+        }
+        Vector2f t1 = p->getTextureCoord(face[0][0] - 1); 
+        Vector2f t2 = p->getTextureCoord(face[1][0] - 1); 
+        Vector2f t3 = p->getTextureCoord(face[2][0] - 1); 
+
+        //glDisable (GL_LIGHTING);
+        glBegin(GL_TRIANGLES);
+        // Vertex 1
+        glNormal3fv(n);
+        glTexCoord2fv(t1);
+        glVertex3fv(v1);
+        // Vertex 2
+        glNormal3fv(n);
+        glTexCoord2fv(t2);
+        glVertex3fv(v2);
+        // Vertext 3
+        glNormal3fv(n);
+        glTexCoord2fv(t3);
+        glVertex3fv(v3);
+        glEnd();
+        //glEnable (GL_LIGHTING);
+	}
+
+	glDisable(GL_TEXTURE_2D);
+}
+
 
 
 void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
@@ -563,7 +575,7 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
         //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         //glBindTexture(GL_TEXTURE_2D, texture1ID);
-        // Bind the projeciton texture
+        // Bind the projection texture
         p->bindTexture();
     }
     
@@ -612,28 +624,34 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             glVertex3fv(v3);
             glEnd();
             //glEnable (GL_LIGHTING);
-        } else {
+		} else {
             Vector3f dir = m_camera->getViewingDir();
             if(Vector3f::dot(dir, n) > 0) {
                 continue;
             }
 
             // Change this
-            float brightness = 1.0;
+            float brightness = 0.2;
             // Don't change this (alpha blending is not what we want);
-            float alpha = 1.0;
-			Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);
-			Vector4f c2 = Vector4f(brightness, brightness, brightness, alpha);
-			Vector4f c3 = Vector4f(brightness, brightness, brightness, alpha);
+            //float alpha = 1.0;
+			//Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);
+			//Vector4f c2 = Vector4f(brightness, brightness, brightness, alpha);
+			//Vector4f c3 = Vector4f(brightness, brightness, brightness, alpha);
+			Vector3f c1 = Vector3f(brightness, brightness, brightness);
+			Vector3f c2 = Vector3f(brightness, brightness, brightness);
+			Vector3f c3 = Vector3f(brightness, brightness, brightness);
             glDisable (GL_LIGHTING);
             glBegin(GL_TRIANGLES);
-            glColor4fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
-            glNormal3fv(n);
+            //glColor4fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
+            glColor3fv(c1);
+			glNormal3fv(n);
             glVertex3fv(v1);
-            glColor4fv(c2);
+            //glColor4fv(c2);
+			glColor3fv(c2);
             glNormal3fv(n);
             glVertex3fv(v2);
-            glColor4fv(c3);
+            //glColor4fv(c3);
+			glColor3fv(c3);
             glNormal3fv(n);
             glVertex3fv(v3);
             glEnd();
@@ -648,4 +666,37 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
     }
     
 }
+/*
+void Mesh::compute_norm()
+{
+	
+	vector<Vector3f> v = currentVertices;
+	vector<Tuple3u> t = faces;
+	vector<Vector3f> n;
 
+	if (SMOOTH){
+		n.resize(v.size());
+		for(unsigned int ii=0; ii<t.size(); ii++) {
+			Vector3f a = v[t[ii][1]] - v[t[ii][0]];
+			Vector3f b = v[t[ii][2]] - v[t[ii][0]];
+			b=Vector3f::cross(a,b);
+			for(int jj=0; jj<3; jj++) {
+				n[t[ii][jj]]+=b;
+			}
+		}
+		for(unsigned int ii=0; ii<v.size(); ii++) {
+			n[ii] = n[ii]/ n[ii].abs();
+		}
+	}else{
+		n.resize(t.size());
+		for(unsigned int ii=0; ii<t.size(); ii++) {
+			Vector3f a = v[t[ii][1]] - v[t[ii][0]];
+			Vector3f b = v[t[ii][2]] - v[t[ii][0]];
+			b=Vector3f::cross(a,b);
+		  n[ii]=b.normalized();
+		}
+
+	}
+	vertexNormals = n;
+}
+*/

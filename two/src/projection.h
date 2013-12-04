@@ -22,6 +22,7 @@ public:
   void loadTexture(const char* filename );
   void initTexture();
   void bindTexture();
+  void bindTexture2(GLubyte* w_text);
 
   // Texture coordinate methods
   void initTextureCoords();
@@ -50,6 +51,7 @@ private:
   // Mesh and texture members
   Texture m_t;
   GLuint m_textureID;
+  GLuint m_textureID2;
 
   Mesh* m_base_mesh;
 
