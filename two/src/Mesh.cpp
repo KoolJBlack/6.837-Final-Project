@@ -250,12 +250,12 @@ void Mesh::init_frame_buffer() {
 }
 
 // TODO: pass in a list of projections 
-GLuint* Mesh::multipass_render()
+GLubyte* Mesh::multipass_render()
 {
     //arbitrary atm
 	int width = 600;
 	int height = 600;	
-    GLuint* final_image = new GLuint(); // image for return data
+    GLubyte* final_image = new GLubyte(); // image for return data
     // Render all of my textures and weights
 	cout << "projections size = " << projections.size() << endl;
     for (int projectionIndex = 0; projectionIndex < projections.size(); projectionIndex++){
@@ -268,7 +268,7 @@ GLuint* Mesh::multipass_render()
         draw_mesh(false, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
-        GLuint* texture_image = new GLuint(); // image for return data
+        GLubyte* texture_image = new GLubyte(); // image for return data
         // Get extra values from the camra class 
 		
         glReadPixels(0,
@@ -286,7 +286,7 @@ GLuint* Mesh::multipass_render()
         draw_mesh(true, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
-        GLuint* weights_image = new GLuint(); // image for return data
+        GLubyte* weights_image = new GLubyte(); // image for return data
         // Get extra values from the camra class
         glReadPixels(0,
             0,
@@ -299,17 +299,17 @@ GLuint* Mesh::multipass_render()
 
 		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
         // Blend texture with weight mask
-        GLuint* result = mult_textures(texture_image, weights_image);
+        GLubyte* result = mult_textures(texture_image, weights_image);
 		
-		free(texture_image);
-		free(weights_image);
+		//free(texture_image);
+		//free(weights_image);
 		delete [] texture_image;
 		delete [] weights_image;
 
         // Add to final output
         final_image =  add_textures(final_image, result);
 
-		free(result);
+		//free(result);
 		delete [] result;
 		
         // Clear the frame buffer
@@ -321,7 +321,7 @@ GLuint* Mesh::multipass_render()
 
 }
 
-GLuint* Mesh::mult_textures(GLuint* im_text, GLuint* w_text){
+GLubyte* Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text){
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, *im_text);
@@ -348,7 +348,7 @@ GLuint* Mesh::mult_textures(GLuint* im_text, GLuint* w_text){
 	return im_text;
 }
 
-GLuint* Mesh::add_textures(GLuint* stored_text, GLuint* new_text){
+GLubyte* Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text){
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, *stored_text); // TODO: need to pull texture from cumulative frame buffer...
@@ -424,7 +424,7 @@ void Mesh::updateProjectionBlendWeights(){
 	m_camera->resetUpdated();
 
     // TODO: reset the weights using the View given by the camera
-    m_viewObj->calculate_weights(m_camera->GetCenter());
+    //m_viewObj->calculate_weights(m_camera->GetCenter());
 
     /*
     Vector3f d = m_camera->getViewingDir();
@@ -461,15 +461,19 @@ void Mesh::draw() {
     //GLuint* final_image = multipass_render();
 
     // Draw final image
-    //draw_image(final_image);
+
+    draw_image(final_image);
+
+	//delete [] final_image;
 }
 
-void Mesh::draw_image(GLuint* image) {
+void Mesh::draw_image(GLubyte* image) {
 	// Create one OpenGL textures
-    glGenTextures(1, image);
+	GLuint textID;
+    glGenTextures(1, &textID);
 
     // "Bind" the newly created texture : all futuhre texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, *image);
+    glBindTexture(GL_TEXTURE_2D, textID);
 
     // Nice trilinear filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

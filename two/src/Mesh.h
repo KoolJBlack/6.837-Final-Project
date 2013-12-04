@@ -94,9 +94,9 @@ struct Mesh {
 	// Texture initialization
 	void init_text();
 	void init_frame_buffer();
-	GLuint* multipass_render();
-	GLuint* mult_textures(GLuint* im_text, GLuint* w_text);
-	GLuint* add_textures(GLuint* stored_text, GLuint* new_text);
+	GLubyte* multipass_render();
+	GLubyte* mult_textures(GLubyte* im_text, GLubyte* w_text);
+	GLubyte* add_textures(GLubyte* stored_text, GLubyte* new_text);
 
 	// compute the normals if they are not given in the object file
 	void compute_norm();
