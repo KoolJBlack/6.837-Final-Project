@@ -308,14 +308,18 @@ void Mesh::multipass_render() {
 GLubyte* Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text){
 	
 	glActiveTexture(GL_TEXTURE0);
+    glClientActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex0ID);
+	//glBindTexture(GL_TEXTURE_2D, tex0ID);
+	glBindTexture(GL_TEXTURE_2D, *im_text);
 	//Simply sample the texture
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	//------------------------
 	glActiveTexture(GL_TEXTURE1);
+    glClientActiveTexture(GL_TEXTURE1);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex1ID);
+	//glBindTexture(GL_TEXTURE_2D, tex1ID);
+	glBindTexture(GL_TEXTURE_2D, *w_text);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 	//Sample RGB, multiply by previous texunit result
 	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);   //Modulate RGB with RGB
@@ -335,13 +339,15 @@ GLubyte* Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text){
 
 GLubyte* Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text){
 	glActiveTexture(GL_TEXTURE0);
+    glClientActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex0ID); // TODO: need to pull texture from cumulative frame buffer...
+	glBindTexture(GL_TEXTURE_2D, *stored_text); // TODO: need to pull texture from cumulative frame buffer...
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	//------------------------
 	glActiveTexture(GL_TEXTURE1);
+    glClientActiveTexture(GL_TEXTURE1);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex1ID); // TODO: need to find the result of multiplying is. 
+	glBindTexture(GL_TEXTURE_2D, *new_text); // TODO: need to find the result of multiplying is. 
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);    //Add RGB with RGB
 	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
@@ -439,15 +445,15 @@ void Mesh::draw() {
     } 
 
     // For now, always draw projeciton 0 with texture
-    draw_mesh(true, 3);
+    //draw_mesh(true, 3);
 
 
     // Multipass rendering
 
-    //multipass_render();
+    multipass_render();
 
     // Draw final image
-    //draw_image(final_image);
+    draw_image(final_image);
 
 }
 
