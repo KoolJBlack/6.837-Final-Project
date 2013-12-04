@@ -110,6 +110,7 @@ struct Mesh {
 	void draw();
 	void draw_mesh(bool useTexture, int projectionIndex);
 	void draw_image(GLubyte * image);
+	void draw_screen_quad();
 
 	// Projection elements
 	std::vector<Projection*> projections;

@@ -349,7 +349,7 @@ void Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text, int size){
 
 void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
 	for (int i = 0; i < size; ++i) {
-		stored_text[i] + new_text[i];
+		stored_text[i] = new_text[i];
 	}
 
 	/*
@@ -474,8 +474,9 @@ void Mesh::draw() {
 }
 
 void Mesh::draw_image(GLubyte* image) {
+    int width = m_camera->getWidth();
+    int height = m_camera->getHeight();
 
-	glLoadIdentity();
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 	glBindTexture(GL_TEXTURE_2D, finalImageID);
@@ -487,8 +488,17 @@ void Mesh::draw_image(GLubyte* image) {
      // Set the GL texture
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, 
                  height, 0, GL_RGB, GL_UNSIGNED_BYTE, 
-                 final_image); 
+                 image); 
 
+    draw_screen_quad();
+
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+
+}
+
+void Mesh::draw_screen_quad() {
     int width = m_camera->getWidth();
     int height = m_camera->getHeight();
 
@@ -498,28 +508,25 @@ void Mesh::draw_image(GLubyte* image) {
     glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
+    glLoadIdentity();
 
-	//glDisable(GL_LIGHTING);
-	// Draw a textured quad
-	glBegin(GL_QUADS);
-	glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
-	glTexCoord2f(0, 1); glVertex3f(0, height, 0);
-	glTexCoord2f(1, 1); glVertex3f(width, height, 0);
-	glTexCoord2f(1, 0); glVertex3f(width, 0, 0);
-	glEnd();
-	//glEnable (GL_LIGHTING);
+
+    //glDisable(GL_LIGHTING);
+    // Draw a textured quad
+    glBegin(GL_QUADS);
+    glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
+    glTexCoord2f(0, 1); glVertex3f(0, height, 0);
+    glTexCoord2f(1, 1); glVertex3f(width, height, 0);
+    glTexCoord2f(1, 0); glVertex3f(width, 0, 0);
+    glEnd();
+    //glEnable (GL_LIGHTING);
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
 
     glMatrixMode(GL_MODELVIEW);
-
-
-	glDisable(GL_TEXTURE_2D);
-	glPopMatrix();
-
-
 }
+
 
 
 void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
