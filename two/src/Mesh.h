@@ -121,6 +121,9 @@ struct Mesh {
   	GLuint texture1ID;
   	GLuint texture2ID;
 
+	GLuint tex0;
+	GLuint tex1;
+
   	// Camera info
   	Camera *m_camera;
 

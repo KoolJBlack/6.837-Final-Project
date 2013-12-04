@@ -255,9 +255,9 @@ GLubyte* Mesh::multipass_render()
     //arbitrary atm
 	int width = 600;
 	int height = 600;	
-    GLubyte* final_image = new GLubyte(); // image for return data
+    byte* final_image = new byte[3*width*height]; // image for return data
     // Render all of my textures and weights
-	cout << "projections size = " << projections.size() << endl;
+	//cout << "projections size = " << projections.size() << endl;
     for (int projectionIndex = 0; projectionIndex < projections.size(); projectionIndex++){
         Projection *p = projections[projectionIndex];
         // Clear the buffer
@@ -268,7 +268,7 @@ GLubyte* Mesh::multipass_render()
         draw_mesh(false, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
-        GLubyte* texture_image = new GLubyte(); // image for return data
+        byte* texture_image = new byte[3*width*height]; // image for return data
         // Get extra values from the camra class 
 		
         glReadPixels(0,
@@ -286,7 +286,7 @@ GLubyte* Mesh::multipass_render()
         draw_mesh(true, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
-        GLubyte* weights_image = new GLubyte(); // image for return data
+        byte* weights_image = new byte[3*width*height]; // image for return data
         // Get extra values from the camra class
         glReadPixels(0,
             0,
@@ -299,6 +299,8 @@ GLubyte* Mesh::multipass_render()
 
 		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
         // Blend texture with weight mask
+		glGenTextures(1, &tex0);
+		glGenTextures(1, &tex1);
         GLubyte* result = mult_textures(texture_image, weights_image);
 		
 		//free(texture_image);
@@ -307,10 +309,10 @@ GLubyte* Mesh::multipass_render()
 		delete [] weights_image;
 
         // Add to final output
-        final_image =  add_textures(final_image, result);
+        final_image = add_textures(final_image, result);
 
 		//free(result);
-		delete [] result;
+		//delete [] result;
 		
         // Clear the frame buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -322,11 +324,7 @@ GLubyte* Mesh::multipass_render()
 }
 
 GLubyte* Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text){
-	GLuint tex0;
-	glGenTextures(1, &tex0);
-
-	GLuint tex1;
-	glGenTextures(1, &tex1);
+	
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, tex0);
@@ -356,12 +354,12 @@ GLubyte* Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text){
 GLubyte* Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text){
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, *stored_text); // TODO: need to pull texture from cumulative frame buffer...
+	glBindTexture(GL_TEXTURE_2D, tex0); // TODO: need to pull texture from cumulative frame buffer...
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	//------------------------
 	glActiveTexture(GL_TEXTURE1);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, *new_text); // TODO: need to find the result of multiplying is. 
+	glBindTexture(GL_TEXTURE_2D, tex1); // TODO: need to find the result of multiplying is. 
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);    //Add RGB with RGB
 	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
