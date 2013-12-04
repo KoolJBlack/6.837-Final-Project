@@ -349,7 +349,7 @@ void Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text, int size){
 
 void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
 	for (int i = 0; i < size; ++i) {
-		stored_text[i] = new_text[i];
+		stored_text[i] + new_text[i];
 	}
 
 	/*
@@ -474,15 +474,6 @@ void Mesh::draw() {
 }
 
 void Mesh::draw_image(GLubyte* image) {
-	int width = m_camera->getWidth();
-	int height = m_camera->getHeight();
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
 
 	glLoadIdentity();
 	glEnable(GL_TEXTURE_2D);
@@ -498,6 +489,16 @@ void Mesh::draw_image(GLubyte* image) {
                  height, 0, GL_RGB, GL_UNSIGNED_BYTE, 
                  final_image); 
 
+    int width = m_camera->getWidth();
+    int height = m_camera->getHeight();
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+
 	//glDisable(GL_LIGHTING);
 	// Draw a textured quad
 	glBegin(GL_QUADS);
@@ -508,71 +509,16 @@ void Mesh::draw_image(GLubyte* image) {
 	glEnd();
 	//glEnable (GL_LIGHTING);
 
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+
+    glMatrixMode(GL_MODELVIEW);
+
 
 	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
 
-	glMatrixMode(GL_MODELVIEW);
-
-
-
-	/*
-
-	// Use this frame to draw the final texture
-	GLuint framebuf0;
-	glGenFramebuffers(1, &framebuf0);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
-		
-	glGenTextures(1, image);
-	glBindTexture(GL_TEXTURE_2D, *image);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 600, 600, 0,
-				 GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-
-	
-	// depth buffer
-	GLuint depthrenderbuffer;
-	glGenRenderbuffers(1, &depthrenderbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 600, 600); 
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-
-	//attach the texture to FBO color attachment point
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *image, 0);
-	//attach the renderbuffer to depth attachment point
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-
-
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		//return false;
-		cout << "should return false" << endl;
-	}
-
-	//switch back to window-system-provided frame buffer
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//set rendering destination to FBO	
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuf0);
-
-	//clear buffers
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//draw_mesh(false); // but with all of the colors == 0.0;
-
-	// unbind FBO
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	*/
 }
 
 
