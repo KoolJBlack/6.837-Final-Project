@@ -93,8 +93,9 @@ struct Mesh {
 
 	// Texture initialization
 	void init_text();
+	void reset_final_image();
 	void init_frame_buffer();
-	GLubyte* multipass_render();
+	void multipass_render();
 	GLubyte* mult_textures(GLubyte* im_text, GLubyte* w_text);
 	GLubyte* add_textures(GLubyte* stored_text, GLubyte* new_text);
 
@@ -118,11 +119,11 @@ struct Mesh {
 	bool m_frame_init;
 
 	// GL texture info
-  	GLuint texture1ID;
-  	GLuint texture2ID;
+	GLuint tex0ID;
+	GLuint tex1ID;
+	GLuint finalImageID;
 
-	GLuint tex0;
-	GLuint tex1;
+	GLubyte * final_image;
 
   	// Camera info
   	Camera *m_camera;

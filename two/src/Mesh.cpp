@@ -202,33 +202,24 @@ void Mesh::init_text() {
         projections[i]->initTexture();
     }
 
+    // Init frame buffer textures
+
+    // Init the frame buffer image. Do not delete this image manually. 
+    // Just call reset_final_image() when you want to clear it.
+    GLubyte* final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()];
+
     // Create one OpenGL textures
-    //glGenTextures(1, &texture1ID);
-
-    // "Bind" the newly created texture : all futuhre texture functions will modify this texture
-    //glBindTexture(GL_TEXTURE_2D, texture1ID);
-
-    // Nice trilinear filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
-    
-    // Creat the GL texture data
-    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    // Set the GL texture
-    // GLubyte* image = t->getGLTexture();
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, t->getWidth(), 
-    //              t->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
-    //              image); 
-    // delete [] image;
-
+    glGenTextures(1, &tex0ID);
+    glGenTextures(1, &tex1ID);
+    glGenTextures(1, &finalImageID);
 
     m_texture_init = true;
     cerr << "texture initialized " << endl;
+}
+
+void Mesh::reset_final_image() {
+    delete[] final_image;
+    final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()]; // image for return data
 }
 
 
@@ -250,25 +241,27 @@ void Mesh::init_frame_buffer() {
 }
 
 // TODO: pass in a list of projections 
-GLubyte* Mesh::multipass_render()
-{
-    //arbitrary atm
-	int width = 600;
-	int height = 600;	
-    byte* final_image = new byte[3*width*height]; // image for return data
+void Mesh::multipass_render() {
+    // Get width and height
+	int width = m_camera->getWidth();
+	int height = m_camera->getHeight();
+
+    reset_final_image();	
+
     // Render all of my textures and weights
 	//cout << "projections size = " << projections.size() << endl;
     for (int projectionIndex = 0; projectionIndex < projections.size(); projectionIndex++){
         Projection *p = projections[projectionIndex];
+        GLubyte* texture_image = new GLubyte[3*width*height]; // image for return data
+        GLubyte* weights_image = new GLubyte[3*width*height]; // image for return data
+        
         // Clear the buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		m_texture_init = false; //temporary
         // Render the textured image and pass in projection 
         draw_mesh(false, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
-        byte* texture_image = new byte[3*width*height]; // image for return data
         // Get extra values from the camra class 
 		
         glReadPixels(0,
@@ -286,7 +279,6 @@ GLubyte* Mesh::multipass_render()
         draw_mesh(true, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
-        byte* weights_image = new byte[3*width*height]; // image for return data
         // Get extra values from the camra class
         glReadPixels(0,
             0,
@@ -298,42 +290,32 @@ GLubyte* Mesh::multipass_render()
 
 
 		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
-        // Blend texture with weight mask
-		glGenTextures(1, &tex0);
-		glGenTextures(1, &tex1);
+        // Blend texture with weight mask;
         GLubyte* result = mult_textures(texture_image, weights_image);
-		
-		//free(texture_image);
-		//free(weights_image);
-		delete [] texture_image;
-		delete [] weights_image;
 
         // Add to final output
         final_image = add_textures(final_image, result);
 
-		//free(result);
 		//delete [] result;
+        delete [] texture_image;
+        delete [] weights_image;
 		
         // Clear the frame buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-
-
-	return final_image;	
-
 }
 
 GLubyte* Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text){
 	
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex0);
+	glBindTexture(GL_TEXTURE_2D, tex0ID);
 	//Simply sample the texture
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	//------------------------
 	glActiveTexture(GL_TEXTURE1);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex1);
+	glBindTexture(GL_TEXTURE_2D, tex1ID);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 	//Sample RGB, multiply by previous texunit result
 	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);   //Modulate RGB with RGB
@@ -354,12 +336,12 @@ GLubyte* Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text){
 GLubyte* Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text){
 	glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex0); // TODO: need to pull texture from cumulative frame buffer...
+	glBindTexture(GL_TEXTURE_2D, tex0ID); // TODO: need to pull texture from cumulative frame buffer...
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	//------------------------
 	glActiveTexture(GL_TEXTURE1);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex1); // TODO: need to find the result of multiplying is. 
+	glBindTexture(GL_TEXTURE_2D, tex1ID); // TODO: need to find the result of multiplying is. 
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);    //Add RGB with RGB
 	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
@@ -459,24 +441,21 @@ void Mesh::draw() {
     // For now, always draw projeciton 0 with texture
     draw_mesh(true, 3);
 
+
     // Multipass rendering
 
-    GLubyte* final_image = multipass_render();
+    //multipass_render();
 
     // Draw final image
+    //draw_image(final_image);
 
-    draw_image(final_image);
-
-	//delete [] final_image;
 }
 
 void Mesh::draw_image(GLubyte* image) {
-	// Create one OpenGL textures
-	GLuint textID;
-    glGenTextures(1, &textID);
+
 
     // "Bind" the newly created texture : all futuhre texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, textID);
+    glBindTexture(GL_TEXTURE_2D, finalImageID);
 
     // Nice trilinear filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

@@ -17,6 +17,14 @@ void Camera::SetDimensions(int w, int h)
     mDimensions[1] = h;
 }
 
+int Camera::getWidth() {
+    return mDimensions[0];
+}
+
+int Camera::getHeight() {
+    return mDimensions[1];
+}
+
 void Camera::SetPerspective(float fovy)
 {
     mPerspective[0] = fovy;

@@ -28,6 +28,9 @@ public:
     void SetViewport(int x, int y, int w, int h);
     void SetPerspective(float fovy);
 
+    int getWidth();
+    int getHeight();
+
     // Call from whatever UI toolkit
     void MouseClick(Button button, int x, int y);
     void MouseDrag(int x, int y);
