@@ -163,12 +163,13 @@ void Mesh::load_mesh( const char* filename )
 
 void Mesh::init_projections_with_textures(string prefix ){
     // Define camera centers
-    Vector3f centers[] = {Vector3f(-5.0,0.0,0.0),
-                        Vector3f(-3.5,0.0,3.5),
+    Vector3f centers[] = {//Vector3f(-5.0,0.0,0.0),
+		Vector3f(-3.5,0.0,3.5)};
                         //Vector3f(0.5,0.5,1.5),
-                        Vector3f(0.0,0.0,5.0),
-                        Vector3f(3.5,0.0,3.5),
-                        Vector3f(5.0,0.0,0.0)};
+                        //Vector3f(0.0,0.0,5.0),
+						//Vector3f(3.5,0.0,3.5),
+                        //Vector3f(5.0,0.0,0.0)};
+
 
     // Projeciton parameters
     //Vector3f center(0.0,0.0,5.0);
@@ -206,8 +207,7 @@ void Mesh::init_text() {
 
     // Init the frame buffer image. Do not delete this image manually. 
     // Just call reset_final_image() when you want to clear it.
-    reset_final_image();
-    //GLubyte* final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()];
+    final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()];
 
     // Create one OpenGL textures
     glGenTextures(1, &tex0ID);
@@ -218,11 +218,13 @@ void Mesh::init_text() {
     cerr << "texture initialized " << endl;
 }
 
-void Mesh::reset_final_image() {
-    if (m_texture_init) {
-        delete[] final_image;
-    }
-    final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()]; // image for return data
+void Mesh::zero_texture(GLubyte * image) {
+	int width = m_camera->getWidth();
+	int height = m_camera->getHeight();
+	int size = width * height * 3;
+	for (int i = 0; i < size; ++i) {
+		image[i] = 0.0;
+	}
 }
 
 
@@ -250,40 +252,17 @@ void Mesh::multipass_render() {
 	int height = m_camera->getHeight();
 	int size = width * height * 3;
 
-    reset_final_image();	
+    zero_texture(final_image);	
 
 	GLubyte* texture_image = new GLubyte[3*width*height]; // image for return data
     GLubyte* weights_image = new GLubyte[3*width*height]; // image for return data
-    
-	// Clear the buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Render the mesh weights image mask and pass in projection 
-    draw_mesh(true, 2); // but with all of the colors == 0.0;
-
-    // Read pixel data
-    // Get extra values from the camra class
-    glReadPixels(0,
-        0,
-        width,
-        height,
-        GL_RGB,
-        GL_UNSIGNED_BYTE,
-        texture_image);
-
-	add_textures(final_image, texture_image, size);
-
-	delete [] texture_image;
-	
-	return;
-
-
-
 
 	// Render all of my textures and weights
 	//cout << "projections size = " << projections.size() << endl;
     for (int projectionIndex = 0; projectionIndex < projections.size(); projectionIndex++){
         //Projection *p = projections[projectionIndex];
+		 zero_texture(texture_image);	
+		 zero_texture(weights_image);	
 
         
         // Clear the buffer
@@ -664,9 +643,9 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             glEnd();
             //glEnable (GL_LIGHTING);
         } else {
-			Vector3f c1 = 0.2;
-			Vector3f c2 = 0.2;
-			Vector3f c3 = 0.2;
+			Vector3f c1 = Vector3f(0.2, 0.2, 0.2);
+			Vector3f c2 = Vector3f(0.2, 0.2, 0.2);
+			Vector3f c3 = Vector3f(0.2, 0.2, 0.2);
             glDisable (GL_LIGHTING);
             glEnable(GL_COLOR_MATERIAL);
             glBegin(GL_TRIANGLES);

@@ -93,7 +93,7 @@ struct Mesh {
 
 	// Texture initialization
 	void init_text();
-	void reset_final_image();
+	void zero_texture(GLubyte * image);
 	void init_frame_buffer();
 	void multipass_render();
 	void mult_textures(GLubyte* im_text, GLubyte* w_text, int size);
