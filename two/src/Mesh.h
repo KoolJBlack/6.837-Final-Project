@@ -124,6 +124,8 @@ struct Mesh {
 	GLuint finalImageID;
 
 	GLubyte * final_image;
+	GLubyte * texture_image;
+	GLubyte * weights_image;
 
   	// Camera info
   	Camera *m_camera;

@@ -164,11 +164,11 @@ void Mesh::load_mesh( const char* filename )
 void Mesh::init_projections_with_textures(string prefix ){
     // Define camera centers
     Vector3f centers[] = {//Vector3f(-5.0,0.0,0.0),
-		Vector3f(-3.5,0.0,3.5)};
-                        //Vector3f(0.5,0.5,1.5),
-                        //Vector3f(0.0,0.0,5.0),
-						//Vector3f(3.5,0.0,3.5),
-                        //Vector3f(5.0,0.0,0.0)};
+		                  //Vector3f(-3.5,0.0,3.5),
+                          //Vector3f(0.5,0.5,1.5),
+                          Vector3f(0.0,0.0,5.0)};
+						  //Vector3f(3.5,0.0,3.5),
+                          //Vector3f(5.0,0.0,0.0)};
 
 
     // Projeciton parameters
@@ -208,6 +208,8 @@ void Mesh::init_text() {
     // Init the frame buffer image. Do not delete this image manually. 
     // Just call reset_final_image() when you want to clear it.
     final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()];
+    texture_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()]; // image for return data
+    weights_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()]; // image for return data
 
     // Create one OpenGL textures
     glGenTextures(1, &tex0ID);
@@ -223,7 +225,7 @@ void Mesh::zero_texture(GLubyte * image) {
 	int height = m_camera->getHeight();
 	int size = width * height * 3;
 	for (int i = 0; i < size; ++i) {
-		image[i] = 0.0;
+		image[i] = 0;
 	}
 }
 
@@ -254,22 +256,16 @@ void Mesh::multipass_render() {
 
     zero_texture(final_image);	
 
-	GLubyte* texture_image = new GLubyte[3*width*height]; // image for return data
-    GLubyte* weights_image = new GLubyte[3*width*height]; // image for return data
-
 	// Render all of my textures and weights
 	//cout << "projections size = " << projections.size() << endl;
     for (int projectionIndex = 0; projectionIndex < projections.size(); projectionIndex++){
         //Projection *p = projections[projectionIndex];
-		 zero_texture(texture_image);	
-		 zero_texture(weights_image);	
-
         
         // Clear the buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Render the textured image and pass in projection 
-        draw_mesh(false, projectionIndex); // but with all of the colors == 0.0;
+        draw_mesh(true, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
         // Get extra values from the camra class 
@@ -286,7 +282,7 @@ void Mesh::multipass_render() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Render the mesh weights image mask and pass in projection 
-        draw_mesh(true, projectionIndex); // but with all of the colors == 0.0;
+        draw_mesh(false, projectionIndex); // but with all of the colors == 0.0;
 
         // Read pixel data
         // Get extra values from the camra class
@@ -301,18 +297,18 @@ void Mesh::multipass_render() {
 
 		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
         // Blend texture with weight mask;
-        mult_textures(texture_image, weights_image, size);
+        //mult_textures(texture_image, weights_image, size);
 
         // Add to final output
         add_textures(final_image, texture_image, size);
 
 
         // Clear the frame buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 	//delete [] result;
-    delete [] texture_image;
-    delete [] weights_image;
+    //delete [] texture_image;
+    //delete [] weights_image;
 		
 }
 
@@ -353,7 +349,7 @@ void Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text, int size){
 
 void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
 	for (int i = 0; i < size; ++i) {
-		stored_text[i] += new_text[i];
+		stored_text[i] = new_text[i];
 	}
 
 	/*
@@ -465,7 +461,7 @@ void Mesh::draw() {
     } 
 
     // For now, always draw projeciton 0 with texture
-    //draw_mesh(true, 2);
+    //draw_mesh(false, 2);
 
 
     // Multipass rendering
@@ -584,10 +580,10 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
     // Set the corresponding projection
     Projection *p = projections[projectionIndex];
 
-    p->drawProjectionCamera();
+    //p->drawProjectionCamera();
 
     // Enable texturing
-    if (m_texture_init) {
+    if (m_texture_init && useTexture) {
         // Enable texturing
         glEnable(GL_TEXTURE_2D);
         //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
@@ -643,11 +639,12 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             glEnd();
             //glEnable (GL_LIGHTING);
         } else {
+
 			Vector3f c1 = Vector3f(0.2, 0.2, 0.2);
 			Vector3f c2 = Vector3f(0.2, 0.2, 0.2);
 			Vector3f c3 = Vector3f(0.2, 0.2, 0.2);
             glDisable (GL_LIGHTING);
-            glEnable(GL_COLOR_MATERIAL);
+            //glEnable(GL_COLOR_MATERIAL);
             glBegin(GL_TRIANGLES);
             glColor3fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
             glNormal3fv(n);
@@ -665,7 +662,7 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
 
     
     // Disable Texturing
-    if (m_texture_init) {
+    if (m_texture_init && useTexture) {
         glDisable(GL_TEXTURE_2D);
     }
     
