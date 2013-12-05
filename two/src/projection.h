@@ -46,6 +46,10 @@ public:
 
   bool isVertexOccluded(int vertexIndex);
 
+  void initWeightedTexture(int size);
+  GLubyte * getWeightedTexture();
+
+
 private:
   // Mesh and texture members
   Texture m_t;
@@ -73,6 +77,8 @@ private:
   Matrix4f m_proj_mat;
   Matrix4f m_bias;
   Matrix4f m_text_mat;
+
+  GLubyte * m_weightedTexture;
 
 };
 

@@ -96,6 +96,8 @@ struct Mesh {
 	void zero_texture(GLubyte * image);
 	void init_frame_buffer();
 	void multipass_render();
+	void set_projection_weighted_texture(int projectionIndex);
+	void set_alpha(GLubyte* im1, GLubyte* im2);
 	void mult_textures(GLubyte* im1, GLubyte* im2, int size);
 	void add_textures(GLubyte* stored_text, GLubyte* new_text, int size);
 
@@ -127,6 +129,10 @@ struct Mesh {
 	GLubyte * final_image;
 	GLubyte * texture_image;
 	GLubyte * weights_image;
+	int m_width;
+	int m_height;
+	int m_depth;
+	int m_size;
 
   	// Camera info
   	Camera *m_camera;

@@ -189,6 +189,8 @@ void Mesh::init_projections_with_textures(string prefix ){
         p->loadTexture(prefix.c_str());
         // Add to projeciton matrix
         projections.push_back(p);
+        // Init weighted textures
+        p->initWeightedTexture(4*m_camera->getWidth()*m_camera->getHeight());
     }
 
     m_texture_init = false;
@@ -204,12 +206,15 @@ void Mesh::init_text() {
     }
 
     // Init frame buffer textures
-
+    m_width = m_camera->getWidth();
+    m_height = m_camera->getHeight();
+    m_depth = 4;
+    m_size = m_depth*m_camera->getWidth()*m_camera->getHeight();
     // Init the frame buffer image. Do not delete this image manually. 
     // Just call reset_final_image() when you want to clear it.
-    final_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()];
-    texture_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()]; // image for return data
-    weights_image = new GLubyte[3*m_camera->getWidth()*m_camera->getHeight()]; // image for return data
+    final_image = new GLubyte[m_depth*m_camera->getWidth()*m_camera->getHeight()];
+    texture_image = new GLubyte[m_depth*m_camera->getWidth()*m_camera->getHeight()]; // image for return data
+    weights_image = new GLubyte[m_depth*m_camera->getWidth()*m_camera->getHeight()]; // image for return data
 
     // Create one OpenGL textures
     glGenTextures(1, &tex0ID);
@@ -221,10 +226,7 @@ void Mesh::init_text() {
 }
 
 void Mesh::zero_texture(GLubyte * image) {
-	int width = m_camera->getWidth();
-	int height = m_camera->getHeight();
-	int size = width * height * 3;
-	for (int i = 0; i < size; ++i) {
+	for (int i = 0; i < m_size; ++i) {
 		image[i] = 0;
 	}
 }
@@ -252,15 +254,15 @@ void Mesh::multipass_render() {
     // Get width and height
 	int width = m_camera->getWidth();
 	int height = m_camera->getHeight();
-	int size = width * height * 3;
+	int size = width * height * m_depth;
 
-    zero_texture(final_image);	
+    //zero_texture(final_image);	
 
 	// Render all of my textures and weights
 	//cout << "projections size = " << projections.size() << endl;
     for (int projectionIndex = 0; projectionIndex < projections.size(); projectionIndex++){
         //Projection *p = projections[projectionIndex];
-        
+
         // Clear the buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -274,7 +276,7 @@ void Mesh::multipass_render() {
             0,
             width,
             height,
-            GL_RGB,
+            GL_RGBA,
             GL_UNSIGNED_BYTE,
             texture_image);
 
@@ -290,14 +292,16 @@ void Mesh::multipass_render() {
             0,
             width,
             height,
-            GL_RGB,
+            GL_RGBA,
             GL_UNSIGNED_BYTE,
             weights_image);
 
 
 		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
         // Blend texture with weight mask;
-        mult_textures(texture_image, weights_image, size);
+        //mult_textures(texture_image, weights_image, size);
+        //set_alpha(texture_image, weights_image);
+        set_projection_weighted_texture(projectionIndex);
 
         // Add to final output
         //add_textures(final_image, texture_image, size);
@@ -313,10 +317,33 @@ void Mesh::multipass_render() {
 		
 }
 
+void Mesh::set_projection_weighted_texture(int projectionIndex) {
+    Projection *p = projections[projectionIndex];
+    GLubyte * weightedTexture = p->getWeightedTexture();
+    int size = m_width * m_height;
+    for (int i = 0; i < size; ++i) {
+        int ii = i * m_depth;
+        weightedTexture[ii + 0] = texture_image[ii + 0];
+        weightedTexture[ii + 1] = texture_image[ii + 1];
+        weightedTexture[ii + 2] = texture_image[ii + 2];
+        weightedTexture[ii + 3] = weights_image[ii + 0];
+        //weightedTexture[ii + 3] = (GLubyte) 255;
+    }
+}
+
+
+void Mesh::set_alpha(GLubyte* im1, GLubyte* im2){
+    int size = m_width * m_height;
+    for (int i = 0; i < size; ++i) {
+        im1[i* m_depth + 3] = im2[i * m_depth];
+    }
+}
+
+
 void Mesh::mult_textures(GLubyte* im1, GLubyte* im2, int size){
     float left, right;
     GLubyte final;
-	for (int i = 0; i < size; ++i) {
+	for (int i = 0; i < size ; ++i) {
         left = (float)im1[i];
         right = ((float)im2[i])/255.0;
 		final = (GLubyte) left * right;
@@ -473,7 +500,7 @@ void Mesh::draw() {
     } 
     glDepthFunc(GL_LEQUAL);
 
-
+    glClearColor(0.0,0.0,0.0,1.0);
 
     // For now, always draw projeciton 0 with texture
     //glDisable(GL_BLEND);
@@ -497,12 +524,22 @@ void Mesh::draw() {
     //draw_mesh(false, 2);
 
     // Multipass rendering
-
     multipass_render();
 
-    // Draw final image
-    draw_image(final_image);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+    for (int i = 0; i < 5; ++i) {
+        // Draw final image
+        glDisable(GL_DEPTH_TEST);
+        draw_image(projections[i]->getWeightedTexture());
+        glEnable(GL_DEPTH_TEST);
+    }
+    glDisable(GL_BLEND);
+    
 }
 
 void Mesh::draw_image(GLubyte* image) {
@@ -518,8 +555,8 @@ void Mesh::draw_image(GLubyte* image) {
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
 
      // Set the GL texture
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, 
-                 height, 0, GL_RGB, GL_UNSIGNED_BYTE, 
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 
+                 height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 
                  image); 
 
     draw_screen_quad();
@@ -543,15 +580,17 @@ void Mesh::draw_screen_quad() {
     glLoadIdentity();
 
 
-    //glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHTING);
     // Draw a textured quad
+    glColor4f(0.0,0.0,0.0,1.0);
+
     glBegin(GL_QUADS);
     glTexCoord2f(0, 0); glVertex3f(0, 0, 0);
     glTexCoord2f(0, 1); glVertex3f(0, height, 0);
     glTexCoord2f(1, 1); glVertex3f(width, height, 0);
     glTexCoord2f(1, 0); glVertex3f(width, 0, 0);
     glEnd();
-    //glEnable (GL_LIGHTING);
+    glEnable (GL_LIGHTING);
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
@@ -624,13 +663,15 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             glEnd();
             //glEnable (GL_LIGHTING);
         } else {
+            /*
             Vector3f dir = m_camera->getViewingDir();
             if(Vector3f::dot(dir, n) > 0) {
                 continue;
             }
+            */
 
             // Change this
-            float brightness = 0.2;
+            float brightness = 0.5;
             // Don't change this (alpha blending is not what we want);
             float alpha = 1.0;
 			Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);

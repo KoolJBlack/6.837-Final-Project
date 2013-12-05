@@ -158,4 +158,17 @@ bool Projection::isVertexOccluded(int vertexIndex) {
 	return false;
 }
 
+void Projection::initWeightedTexture(int size) {
+	/*
+    if(m_weightedTexture!=0){
+        delete [] m_weightedTexture;
+    }
+    */
+    m_weightedTexture = new GLubyte[size];
+}
+
+GLubyte * Projection::getWeightedTexture() {
+	return m_weightedTexture;
+}
+
 
