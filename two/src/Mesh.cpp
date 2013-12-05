@@ -301,7 +301,7 @@ void Mesh::multipass_render() {
 
         // Add to final output
         //add_textures(final_image, texture_image, size);
-        add_textures(final_image, texture_image, size);
+        //add_textures(final_image, texture_image, size);
 
 
         // Clear the frame buffer
@@ -314,10 +314,15 @@ void Mesh::multipass_render() {
 }
 
 void Mesh::mult_textures(GLubyte* im1, GLubyte* im2, int size){
+    float left, right;
+    GLubyte final;
 	for (int i = 0; i < size; ++i) {
-        float left = (float)im1[i];
-        float right = ((float)im2[i])/255.0;
-		im1[i] = (GLubyte) left * right;
+        left = (float)im1[i];
+        right = ((float)im2[i])/255.0;
+		final = (GLubyte) left * right;
+        if (final_image[i] + final > final_image[i]){
+            final_image[i] += final;
+        }
 	}
 
 	/*
