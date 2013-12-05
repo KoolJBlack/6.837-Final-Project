@@ -15,7 +15,8 @@ void Views::calculate_weights(Vector3f cam_center){
 	vector<Projection*>& ps = *v_projections;
 	// use headshape and not vertices because it's the neutral shape
 
-	v_weights = vector<vector<float>>();
+	v_weights.clear();
+	//v_weights = vector<vector<float>>();
 	// look at each vertex
 	for (unsigned int i = 0; i < v_vertices->size(); i++){
 		vector<float> weights;
@@ -67,6 +68,5 @@ void Views::calculate_weights(Vector3f cam_center){
 		weights[maxind[1]] = weights[maxind[1]] / total_weight;
 		weights[maxind[2]] = weights[maxind[2]] / total_weight;
 		v_weights.push_back(weights);
-		cout << "weights = " << endl;
 	} // end for each vertex
 }

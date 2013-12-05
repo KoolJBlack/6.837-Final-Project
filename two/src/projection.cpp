@@ -106,7 +106,7 @@ Vector3f Projection::computeUV(Vector3f v){
 	//if (st[0] > 1.0) { st[0] = 1.0; }
 	//if (st[1] < 0.0) { st[1] = 0; }
 	//if (st[1] > 1.0) { st[1] = 1.0; }
-	cerr << "UV: " << st << " and r/q " << strq[2]/strq[3] << endl;
+	//cerr << "UV: " << st << " and r/q " << strq[2]/strq[3] << endl;
 	return Vector3f(st, strq[2]/strq[3]);
 }
 
