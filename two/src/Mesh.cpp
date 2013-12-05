@@ -166,10 +166,10 @@ void Mesh::load_mesh( const char* filename )
 void Mesh::init_projections_with_textures(string prefix ){
     float height_offset = 0.6;
     // Define camera centers
-    Vector3f centers[] = {//Vector3f(5.0,height_offset,0.0)};
+    Vector3f centers[] = {Vector3f(7.0,height_offset,7.0)};
 		                  //Vector3f(-3.5,height_offset,3.5),
                           //Vector3f(0.5,0.5,1.5),
-                          Vector3f(-0.15,height_offset,7.0)};
+                          //Vector3f(-0.15,height_offset,7.0)};
 						  //Vector3f(3.5,height_offset,3.5),
                           //Vector3f(5.0,height_offset,0.0)};
 
