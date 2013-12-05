@@ -20,12 +20,10 @@ ModelerView::ModelerView(int x, int y, int w, int h,
 	m_mesh.setCamera(m_camera);
 	
     m_camera->SetDimensions( w, h );
-    m_camera->SetDistance( 5);
-    //m_camera->SetCenter( Vector3f( 0.5, 0.5, 0.5 ) );
+    m_camera->SetDistance( 10);
     m_camera->SetCenter( Vector3f( 0, 0, 0 ) ); 
 
 	m_drawAxes = true;
-	//m_drawSkeleton = true;
 }
 
 // If you want to load files, etc, do that here.

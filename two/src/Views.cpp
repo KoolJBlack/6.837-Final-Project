@@ -15,16 +15,16 @@ void Views::calculate_weights(Vector3f cam_center){
 	vector<Projection*>& ps = *v_projections;
 	// use headshape and not vertices because it's the neutral shape
 
-	v_weights = vector<vector<float>>();
+	v_weights = vector<vector<float> >();
 	// look at each vertex
 	for (unsigned int i = 0; i < v_vertices->size(); i++){
 		vector<float> weights;
 		// for each projection, find the dot product
 		for (unsigned int j = 0; j < ps.size(); j++){
 			Vector3f projDir = ps[j]->dirToProjection(vs[i]);
-			Vector3f camDir = (cam_center - vs[i]).normalized();
+			Vector3f camDir = -(cam_center - vs[i]).normalized();
 			float w = Vector3f::dot(projDir, camDir);
-			weights.push_back(max(0,w)); // not dealing with occlusion right now
+			weights.push_back(max(0.0f,w)); // not dealing with occlusion right now
 		}
 
 		//figure out the three closest projections according to their weights
@@ -67,6 +67,6 @@ void Views::calculate_weights(Vector3f cam_center){
 		weights[maxind[1]] = weights[maxind[1]] / total_weight;
 		weights[maxind[2]] = weights[maxind[2]] / total_weight;
 		v_weights.push_back(weights);
-		cout << "weights = " << endl;
+		//cout << "weights = " << endl;
 	} // end for each vertex
 }

@@ -16,6 +16,7 @@ Camera * Mesh::getCamera() {
 
 void Mesh::load_mesh( const char* filename )
 {
+
 	// check if we are loading a single .obj file or all blendshapes
 	string f = string(filename);
 	string objString = f + ".obj";
@@ -37,7 +38,10 @@ void Mesh::load_mesh( const char* filename )
 			exit(0);
 		}	
 	}
-	
+
+    Matrix4f scaling = Matrix4f::scaling(0.01,0.01,0.01);
+
+
 	ifstream in1(objString.c_str());
     // load the BJ fOile here
     string line;
@@ -50,6 +54,7 @@ void Mesh::load_mesh( const char* filename )
         if (s == "v") {
             Vector3f v;
             ss >> v[0] >> v[1] >> v[2];
+            v = (scaling * Vector4f(v,1)).xyz();
             currentVertices.push_back(v);
             // Set the default color
             vertexColors.push_back(Vector3f(1.0,1.0,1.0));
@@ -159,31 +164,34 @@ void Mesh::load_mesh( const char* filename )
 
 
 void Mesh::init_projections_with_textures(string prefix ){
+    float height_offset = 0.6;
     // Define camera centers
-    Vector3f centers[] = {Vector3f(-5.0,0.0,0.0),
-		                  Vector3f(-3.5,0.0,3.5),
+    Vector3f centers[] = {//Vector3f(5.0,height_offset,0.0)};
+		                  //Vector3f(-3.5,height_offset,3.5),
                           //Vector3f(0.5,0.5,1.5),
-                          Vector3f(0.0,0.0,5.0),
-						  Vector3f(3.5,0.0,3.5),
-                          Vector3f(5.0,0.0,0.0)};
+                          Vector3f(-0.15,height_offset,7.0)};
+						  //Vector3f(3.5,height_offset,3.5),
+                          //Vector3f(5.0,height_offset,0.0)};
 
 
     // Projeciton parameters
     //Vector3f center(0.0,0.0,5.0);
     Vector3f target(0.0,0.0,0.0);
     Vector3f up = Vector3f::UP;
-    float fov = 15.0;
-    float aspect = 1.0;
+    float fov = 20.0;
+    float aspect = 1.25;
 
     // For each camera center, create projection with texture
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 1; ++i) {
         Projection * p = new Projection(centers[i], target, up, fov, aspect, this);
         p->updateTextureMatrix(m_camera->viewMatrix());
         p->initTextureCoords();
         // Load texture using prefix and index
-        string index = static_cast<ostringstream*>( &(ostringstream() << i) )->str();
-        string textFile = prefix + index + ".bmp";
-        p->loadTexture(prefix.c_str());
+        string index = static_cast<ostringstream*>( &(ostringstream() << 2) )->str();
+        string textFile = "data/face" + index + ".bmp";
+        p->loadTexture(textFile.c_str());
+        //p->loadTexture(prefix.c_str());
+        //p->loadTexture("data/face1.bmp");
         // Add to projeciton matrix
         projections.push_back(p);
         // Init weighted textures
@@ -396,7 +404,7 @@ void Mesh::draw() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < projections.size(); ++i) {
         // Draw final image
         glDisable(GL_DEPTH_TEST);
         draw_image(projections[i]->getWeightedTexture());
@@ -528,19 +536,20 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             //glEnable (GL_LIGHTING);
         } else {
 
+            float brightness = 1.0;
             // Don't change this (alpha blending is not what we want);
             float alpha = 1.0;
 			
-			float b1 = m_viewObj->v_weights[face[0][0]-1][projectionIndex];
-            float b2 = m_viewObj->v_weights[face[1][0]-1][projectionIndex];
-            float b3 = m_viewObj->v_weights[face[2][0]-1][projectionIndex];
-            Vector4f c1 = Vector4f(b1, b1, b1, alpha);
-            Vector4f c2 = Vector4f(b2, b2, b2, alpha);
-            Vector4f c3 = Vector4f(b3, b3, b3, alpha);
+			// float b1 = m_viewObj->v_weights[face[0][0]-1][projectionIndex];
+   //          float b2 = m_viewObj->v_weights[face[1][0]-1][projectionIndex];
+   //          float b3 = m_viewObj->v_weights[face[2][0]-1][projectionIndex];
+   //          Vector4f c1 = Vector4f(b1, b1, b1, alpha);
+   //          Vector4f c2 = Vector4f(b2, b2, b2, alpha);
+   //          Vector4f c3 = Vector4f(b3, b3, b3, alpha);
             
-			//Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);
-			//Vector4f c2 = Vector4f(brightness, brightness, brightness, alpha);
-			//Vector4f c3 = Vector4f(brightness, brightness, brightness, alpha);
+			Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);
+			Vector4f c2 = Vector4f(brightness, brightness, brightness, alpha);
+			Vector4f c3 = Vector4f(brightness, brightness, brightness, alpha);
             glDisable (GL_LIGHTING);
             glBegin(GL_TRIANGLES);
             glColor4fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
