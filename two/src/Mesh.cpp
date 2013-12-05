@@ -152,14 +152,22 @@ void Mesh::load_mesh( const char* filename )
 		m_blendShapes[0] = HeadShape;
 	}
 	else{
-		for(int i = 0; i < 11; i++){
+		for(int i = 1; i < 11; i++){
 			m_blendShapes[i] = HeadShape;
 		}
 	}
 
-	// once loaded, we can create a View object from the neutral mesh object
-	// TODO: not sure if the projections are loaded yet at this point. 
-	m_viewObj = new Views(&currentVertices, &projections);
+	// do some pre-processing to figure out which vertices are useful for updating.
+	usefulBVs = vector<int>();
+	for (int j = 0; j < currentVertices.size(); j++){
+		for (int i = 1; i < 11; i++){
+			if (currentVertices[j] != m_blendShapes[i].b_vertices[j]){				
+				usefulBVs.push_back(j);
+				break;
+			}
+		}
+	}
+	BS_updated = false;
 }
 
 
@@ -201,6 +209,10 @@ void Mesh::init_projections_with_textures(string prefix ){
 
     m_texture_init = false;
     m_frame_init = false;
+
+	// so that I make sure I can pass in projections
+	m_viewObj = new Views(&currentVertices, &projections);
+	m_viewObj->calculate_weights(m_camera->GetCenter());
 }
 
 
@@ -351,7 +363,7 @@ void Mesh::compute_norm()
 
 
 
-void Mesh::update() {
+void Mesh::update() { // this gets called when the UI changes, not when the camera changes 
     // Update blend weights
     updateProjectionBlendWeights();
 }
@@ -382,11 +394,20 @@ void Mesh::updateProjectionBlendWeights(){
 
 
 void Mesh::draw() {	
+	
+	if (!BS_updated){ // redraw from camera move, not blendshapes
+		m_viewObj->calculate_weights(m_camera->GetCenter());
+	}
+	else{
+		BS_updated = false; //reset
+	}
         // reset the weights using the View given by the camera
-    m_viewObj->calculate_weights(m_camera->GetCenter());
+    //m_viewObj->calculate_weights(m_camera->GetCenter());
     // Init the texture if it hasn't been done yet
     // This is a hack because texture loading can only be done after the window is created
-    if ( !m_texture_init ) {
+    
+	
+	if ( !m_texture_init ) {
         init_text();
     } 
     if ( !m_frame_init ) {
@@ -412,6 +433,7 @@ void Mesh::draw() {
         glEnable(GL_DEPTH_TEST);
     }
     glDisable(GL_BLEND);
+	
     
 }
 
@@ -540,6 +562,7 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             float brightness = 1.0;
             // Don't change this (alpha blending is not what we want);
             float alpha = 1.0;
+			float brightness = 1.0;
 			
 			// float b1 = m_viewObj->v_weights[face[0][0]-1][projectionIndex];
    //          float b2 = m_viewObj->v_weights[face[1][0]-1][projectionIndex];
