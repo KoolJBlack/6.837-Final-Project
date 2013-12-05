@@ -55,7 +55,6 @@ void Projection::loadTexture(const char* filename ){
 void Projection::initTexture() {
 	// Create one OpenGL textures
     glGenTextures(1, &m_textureID);
-	glGenTextures(1, &m_textureID2);
 }
 
 void Projection::bindTexture() {
@@ -72,34 +71,8 @@ void Projection::bindTexture() {
 
      // Set the GL texture
     GLubyte* image = m_t.getGLTexture();
-	int size = 3* m_base_mesh->getCamera()->getWidth() * m_base_mesh->getCamera()->getHeight();
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_t.getWidth(), 
                  m_t.getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, 
-                 image); 
-    delete [] image;
-
-}
-
-void Projection::bindTexture2(GLubyte* image) {
-    // "Bind" the newly created texture : all futuhre texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, m_textureID2);
-
-    // Nice trilinear filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST); // Linear Filtering
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST); // Linear Filtering    
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
-    //glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
-
-	int width = m_base_mesh->getCamera()->getWidth();
-	int height = m_base_mesh->getCamera()->getHeight();
-     // Set the GL texture
-    //GLubyte* image = m_t.getGLTexture();
-	int size = 3* width * height;
-	//m_base_mesh->mult_textures(image, w_text,size);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, 
-                 height, 0, GL_RGB, GL_UNSIGNED_BYTE, 
                  image); 
     delete [] image;
 
@@ -183,6 +156,19 @@ void Projection::drawProjectionCamera() {
 
 bool Projection::isVertexOccluded(int vertexIndex) {
 	return false;
+}
+
+void Projection::initWeightedTexture(int size) {
+	/*
+    if(m_weightedTexture!=0){
+        delete [] m_weightedTexture;
+    }
+    */
+    m_weightedTexture = new GLubyte[size];
+}
+
+GLubyte * Projection::getWeightedTexture() {
+	return m_weightedTexture;
 }
 
 

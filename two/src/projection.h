@@ -22,7 +22,6 @@ public:
   void loadTexture(const char* filename );
   void initTexture();
   void bindTexture();
-  void bindTexture2(GLubyte* w_text);
 
   // Texture coordinate methods
   void initTextureCoords();
@@ -47,11 +46,14 @@ public:
 
   bool isVertexOccluded(int vertexIndex);
 
+  void initWeightedTexture(int size);
+  GLubyte * getWeightedTexture();
+
+
 private:
   // Mesh and texture members
   Texture m_t;
   GLuint m_textureID;
-  GLuint m_textureID2;
 
   Mesh* m_base_mesh;
 
@@ -75,6 +77,8 @@ private:
   Matrix4f m_proj_mat;
   Matrix4f m_bias;
   Matrix4f m_text_mat;
+
+  GLubyte * m_weightedTexture;
 
 };
 
