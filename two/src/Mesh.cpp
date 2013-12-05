@@ -164,8 +164,8 @@ void Mesh::load_mesh( const char* filename )
 void Mesh::init_projections_with_textures(string prefix ){
     // Define camera centers
     Vector3f centers[] = {//Vector3f(-5.0,0.0,0.0),
-		                  //Vector3f(-3.5,0.0,3.5),
-                          //Vector3f(0.5,0.5,1.5),
+		                  Vector3f(-3.5,0.0,3.5),
+                          Vector3f(0.5,0.5,1.5),
 						  Vector3f(0.0,0.0,5.0)};
 						  //Vector3f(3.5,0.0,3.5),
                           //Vector3f(5.0,0.0,0.0)};
@@ -179,7 +179,7 @@ void Mesh::init_projections_with_textures(string prefix ){
     float aspect = 1.0;
 
     // For each camera center, create projection with texture
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < 3; ++i) {
         Projection * p = new Projection(centers[i], target, up, fov, aspect, this);
         p->updateTextureMatrix(m_camera->viewMatrix());
         p->initTextureCoords();
@@ -247,7 +247,7 @@ void Mesh::init_frame_buffer() {
     cerr << "frame buffer initialized " << endl;
 }
 
-// TODO: pass in a list of projections 
+// TODO: get rid of this
 void Mesh::multipass_render() {
     // Get width and height
 	int width = m_camera->getWidth();
@@ -389,8 +389,9 @@ void Mesh::updateProjectionBlendWeights(){
 	}
 	m_camera->resetUpdated();
 
-    // TODO: reset the weights using the View given by the camera
-    //m_viewObj->calculate_weights(m_camera->GetCenter());
+    // reset the weights using the View given by the camera
+	// TODO: is this in the right location?
+    m_viewObj->calculate_weights(m_camera->GetCenter());
 
     /*
     Vector3f d = m_camera->getViewingDir();
@@ -442,11 +443,16 @@ void Mesh::draw() {
 	int height = m_camera->getHeight();
 	int size = 3 * width * height;
 	for (int i = 0; i < projections.size(); i++){
+		texture_image = new GLubyte[size];
+		weights_image = new GLubyte[size];
 		getIText(i);
 		getWText(i);
+		final_image = new GLubyte[size];
 		mult_textures(texture_image, weights_image, final_image, size);
-		draw_final(final_image, i);
+		draw_final(texture_image, i);
 		//draw_mesh(true, i);
+
+		delete[] texture_image;
 
 		// this type of clearing makes the program break early
 		//zero_texture(final_image);
@@ -631,7 +637,15 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             }
 
             // Change this
-            float brightness = 0.2;
+            /*
+			float b1 = m_viewObj->v_weights[face[0][0]-1][projectionIndex];
+			float b2 = m_viewObj->v_weights[face[1][0]-1][projectionIndex];
+			float b3 = m_viewObj->v_weights[face[2][0]-1][projectionIndex];
+			Vector3f c1 = Vector3f(b1, b1, b1);
+			Vector3f c2 = Vector3f(b2, b2, b2);
+			Vector3f c3 = Vector3f(b3, b3, b3);
+			*/
+			float brightness = 0.3;
             // Don't change this (alpha blending is not what we want);
             //float alpha = 1.0;
 			//Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);
