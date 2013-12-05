@@ -15,6 +15,7 @@ void Views::calculate_weights(Vector3f cam_center){
 	vector<Projection*>& ps = *v_projections;
 	// use headshape and not vertices because it's the neutral shape
 
+	v_weights = vector<vector<float>>();
 	// look at each vertex
 	for (unsigned int i = 0; i < v_vertices->size(); i++){
 		vector<float> weights;
