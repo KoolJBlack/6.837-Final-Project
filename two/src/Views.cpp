@@ -62,7 +62,7 @@ void Views::calculate_weights(Vector3f cam_center){
 				weights[j] = 0.0f;
 			}
 		} // end for each projection
-
+		weights[maxind[0]] *= 3.5;
 		float total_weight = weights[maxind[0]] + weights[maxind[1]] + weights[maxind[2]];
 		// normalize the weights. 
 		weights[maxind[0]] = weights[maxind[0]] / total_weight;

@@ -24,7 +24,7 @@ Projection::Projection(const Vector3f& center, const Vector3f& target, const Vec
     m_vertexBlendWeights = std::vector<float>(m_base_mesh->currentVertices.size());
 
     // Init projection matrices
-    m_view_mat = Matrix4f::lookAt(center, target, up);
+    m_view_mat = Matrix4f::lookAt(center, target, up.normalized());
     m_proj_mat = Matrix4f::perspectiveProjection(m_fov, aspect, 0, 1000, true);
     m_bias = Matrix4f(0.5f, 0.0f, 0.0f, 0.5f,
                         0.0f, 0.5f, 0.0f, 0.5f,
@@ -41,7 +41,8 @@ Projection::~Projection() {
 }
 
 void Projection::updateTextureMatrix(Matrix4f model_mat ) {
-    m_text_mat = m_bias * m_proj_mat * m_view_mat * model_mat ;
+    //m_text_mat = m_bias * m_proj_mat * m_view_mat * model_mat ;
+    m_text_mat = m_bias * m_proj_mat * m_view_mat;
 }
 
 void Projection::resetTextureMatrix() {
@@ -109,7 +110,7 @@ Vector3f Projection::computeUV(Vector3f v){
 	//if (st[0] > 1.0) { st[0] = 1.0; }
 	//if (st[1] < 0.0) { st[1] = 0; }
 	//if (st[1] > 1.0) { st[1] = 1.0; }
-	//cerr << "UV: " << st << " and r/q " << strq[2]/strq[3] << endl;
+	cerr << "UV: " << st << " and r/q " << strq[2]/strq[3] << endl;
 	return Vector3f(st, strq[2]/strq[3]);
 }
 
