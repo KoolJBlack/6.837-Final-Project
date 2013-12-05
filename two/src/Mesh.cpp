@@ -252,11 +252,11 @@ void Mesh::zero_texture(GLubyte * image) {
 
 void Mesh::init_frame_buffer() {
 	
-	glewExperimental=GL_TRUE;
-	GLenum err=glewInit();
-	if (err!= GLEW_OK) {
-		cerr << "Glew init fail :( " << endl;
-	}
+	// glewExperimental=GL_TRUE;
+	// GLenum err=glewInit();
+	// if (err!= GLEW_OK) {
+	// 	cerr << "Glew init fail :( " << endl;
+	// }
 
     m_frame_init = true;
     cerr << "frame buffer initialized " << endl;
@@ -559,7 +559,6 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             //glEnable (GL_LIGHTING);
         } else {
 
-            float brightness = 1.0;
             // Don't change this (alpha blending is not what we want);
             float alpha = 1.0;
 			float brightness = 1.0;

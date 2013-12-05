@@ -62,7 +62,9 @@ struct Mesh {
 
 	//vector<BlendShape> m_blendShapes;
 	BlendShape m_blendShapes[11];
-	
+
+	std::vector<int> usefulBVs;
+	bool BS_updated;
 
 	// current texture coordinates 
 	std::vector< Vector2f > textureCoords;
