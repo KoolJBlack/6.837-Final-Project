@@ -166,7 +166,7 @@ void Mesh::load_mesh( const char* filename )
 void Mesh::init_projections_with_textures(string prefix ){
     float height_offset = 0.6;
     // Define camera centers
-    Vector3f centers[] = {Vector3f(7.0,height_offset,7.0)};
+    Vector3f centers[] = {Vector3f(2.0,0.0,1.0)};
 		                  //Vector3f(-3.5,height_offset,3.5),
                           //Vector3f(0.5,0.5,1.5),
                           //Vector3f(-0.15,height_offset,7.0)};
@@ -179,7 +179,7 @@ void Mesh::init_projections_with_textures(string prefix ){
     Vector3f target(0.0,0.0,0.0);
     Vector3f up = Vector3f::UP;
     float fov = 20.0;
-    float aspect = 1.25;
+    float aspect = 1.6;
 
     // For each camera center, create projection with texture
     for (int i = 0; i < 1; ++i) {
@@ -189,8 +189,9 @@ void Mesh::init_projections_with_textures(string prefix ){
         // Load texture using prefix and index
         string index = static_cast<ostringstream*>( &(ostringstream() << 2) )->str();
         string textFile = "data/face" + index + ".bmp";
-        p->loadTexture(textFile.c_str());
+        //p->loadTexture(textFile.c_str());
         //p->loadTexture(prefix.c_str());
+        p->loadTexture("data/Cube.bmp");
         //p->loadTexture("data/face1.bmp");
         // Add to projeciton matrix
         projections.push_back(p);
@@ -476,7 +477,7 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
     // Set the corresponding projection
     Projection *p = projections[projectionIndex];
 
-    //p->drawProjectionCamera();
+    p->drawProjectionCamera();
 
     // Enable texturing
     if (m_texture_init && useTexture) {
