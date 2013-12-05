@@ -163,12 +163,12 @@ void Mesh::load_mesh( const char* filename )
 
 void Mesh::init_projections_with_textures(string prefix ){
     // Define camera centers
-    Vector3f centers[] = {//Vector3f(-5.0,0.0,0.0),
-		                  //Vector3f(-3.5,0.0,3.5),
+    Vector3f centers[] = {Vector3f(-5.0,0.0,0.0),
+		                  Vector3f(-3.5,0.0,3.5),
                           //Vector3f(0.5,0.5,1.5),
-                          Vector3f(0.0,0.0,5.0)};
-						  //Vector3f(3.5,0.0,3.5),
-                          //Vector3f(5.0,0.0,0.0)};
+                          Vector3f(0.0,0.0,5.0),
+						  Vector3f(3.5,0.0,3.5),
+                          Vector3f(5.0,0.0,0.0)};
 
 
     // Projeciton parameters
@@ -179,7 +179,7 @@ void Mesh::init_projections_with_textures(string prefix ){
     float aspect = 1.0;
 
     // For each camera center, create projection with texture
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < 5; ++i) {
         Projection * p = new Projection(centers[i], target, up, fov, aspect, this);
         p->updateTextureMatrix(m_camera->viewMatrix());
         p->initTextureCoords();
@@ -297,9 +297,10 @@ void Mesh::multipass_render() {
 
 		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
         // Blend texture with weight mask;
-        //mult_textures(texture_image, weights_image, size);
+        mult_textures(texture_image, weights_image, size);
 
         // Add to final output
+        //add_textures(final_image, texture_image, size);
         add_textures(final_image, texture_image, size);
 
 
@@ -312,9 +313,11 @@ void Mesh::multipass_render() {
 		
 }
 
-void Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text, int size){
+void Mesh::mult_textures(GLubyte* im1, GLubyte* im2, int size){
 	for (int i = 0; i < size; ++i) {
-		im_text[i] *= w_text[i];
+        float left = (float)im1[i];
+        float right = ((float)im2[i])/255.0;
+		im1[i] = (GLubyte) left * right;
 	}
 
 	/*
@@ -350,7 +353,11 @@ void Mesh::mult_textures(GLubyte* im_text, GLubyte* w_text, int size){
 void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
     
 	for (int i = 0; i < size; ++i) {
-		stored_text[i] += new_text[i];
+        if (stored_text[i] + new_text[i] < stored_text[i]){
+            stored_text[i] = 255;
+        } else {
+		    stored_text[i] += new_text[i];
+        }
 	}
 
 
@@ -464,12 +471,12 @@ void Mesh::draw() {
 
 
     // For now, always draw projeciton 0 with texture
-    glDisable(GL_BLEND);
+    //glDisable(GL_BLEND);
     //draw_mesh(true, 0);
 
-    glEnable(GL_BLEND);
+    //glEnable(GL_BLEND);
     // Add
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     // Multiply
     //glBlendFunc(GL_DST_COLOR, GL_ZERO );
     // Subtract
@@ -479,17 +486,17 @@ void Mesh::draw() {
 
     // Here we draw two meshes. If you have blending add enabled, 
     // The color components of the meshes well add together
-    draw_mesh(false, 0);
-    draw_mesh(false, 0);
+    //draw_mesh(false, 0);
+    //draw_mesh(false, 0);
     //draw_mesh(false, 2);
     //draw_mesh(false, 2);
 
     // Multipass rendering
 
-    //multipass_render();
+    multipass_render();
 
     // Draw final image
-    //draw_image(final_image);
+    draw_image(final_image);
 
 }
 
@@ -618,7 +625,7 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             }
 
             // Change this
-            float brightness = 1.0;
+            float brightness = 0.2;
             // Don't change this (alpha blending is not what we want);
             float alpha = 1.0;
 			Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);

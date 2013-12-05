@@ -96,7 +96,7 @@ struct Mesh {
 	void zero_texture(GLubyte * image);
 	void init_frame_buffer();
 	void multipass_render();
-	void mult_textures(GLubyte* im_text, GLubyte* w_text, int size);
+	void mult_textures(GLubyte* im1, GLubyte* im2, int size);
 	void add_textures(GLubyte* stored_text, GLubyte* new_text, int size);
 
 	// compute the normals if they are not given in the object file
