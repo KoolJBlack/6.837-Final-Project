@@ -154,10 +154,6 @@ void Projection::drawProjectionCamera() {
 	glPopMatrix();
 }
 
-bool Projection::isVertexOccluded(int vertexIndex) {
-	return false;
-}
-
 void Projection::initWeightedTexture(int size) {
 	/*
     if(m_weightedTexture!=0){

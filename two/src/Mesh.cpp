@@ -154,9 +154,6 @@ void Mesh::load_mesh( const char* filename )
 
 	// once loaded, we can create a View object from the neutral mesh object
 	// TODO: not sure if the projections are loaded yet at this point. 
-	//m_viewObj = new Views(currentVertices, projections);
-    //init_frame_buffer();
-	//projections.push_back(p); // this is temporary for testing
 	m_viewObj = new Views(&currentVertices, &projections);
 }
 
@@ -232,11 +229,6 @@ void Mesh::zero_texture(GLubyte * image) {
 }
 
 
-void Mesh::bind_projeciton_text(Projection &p) {
-    p.bindTexture();
-}
-
-
 void Mesh::init_frame_buffer() {
 	
 	glewExperimental=GL_TRUE;
@@ -256,10 +248,6 @@ void Mesh::multipass_render() {
 	int height = m_camera->getHeight();
 	int size = width * height * m_depth;
 
-    //zero_texture(final_image);	
-
-	// Render all of my textures and weights
-	//cout << "projections size = " << projections.size() << endl;
     for (int projectionIndex = 0; projectionIndex < projections.size(); projectionIndex++){
         //Projection *p = projections[projectionIndex];
 
@@ -296,24 +284,11 @@ void Mesh::multipass_render() {
             GL_UNSIGNED_BYTE,
             weights_image);
 
-
-		// begin texture combiners - http://www.opengl.org/wiki/Texture_Combiners
-        // Blend texture with weight mask;
-        //mult_textures(texture_image, weights_image, size);
-        //set_alpha(texture_image, weights_image);
+		// Set the weights and texture to the projection
         set_projection_weighted_texture(projectionIndex);
 
-        // Add to final output
-        //add_textures(final_image, texture_image, size);
-        //add_textures(final_image, texture_image, size);
-
-
-        // Clear the frame buffer
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-	//delete [] result;
-    //delete [] texture_image;
-    //delete [] weights_image;
+
 		
 }
 
@@ -327,98 +302,8 @@ void Mesh::set_projection_weighted_texture(int projectionIndex) {
         weightedTexture[ii + 1] = texture_image[ii + 1];
         weightedTexture[ii + 2] = texture_image[ii + 2];
         weightedTexture[ii + 3] = weights_image[ii + 0];
-        //weightedTexture[ii + 3] = (GLubyte) 255;
     }
 }
-
-
-void Mesh::set_alpha(GLubyte* im1, GLubyte* im2){
-    int size = m_width * m_height;
-    for (int i = 0; i < size; ++i) {
-        im1[i* m_depth + 3] = im2[i * m_depth];
-    }
-}
-
-
-void Mesh::mult_textures(GLubyte* im1, GLubyte* im2, int size){
-    float left, right;
-    GLubyte final;
-	for (int i = 0; i < size ; ++i) {
-        left = (float)im1[i];
-        right = ((float)im2[i])/255.0;
-		final = (GLubyte) left * right;
-        if (final_image[i] + final > final_image[i]){
-            final_image[i] += final;
-        }
-	}
-
-	/*
-	glActiveTexture(GL_TEXTURE0);
-    glClientActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, tex0ID);
-	glBindTexture(GL_TEXTURE_2D, *im_text);
-	//Simply sample the texture
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	//------------------------
-	glActiveTexture(GL_TEXTURE1);
-    glClientActiveTexture(GL_TEXTURE1);
-	glEnable(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, tex1ID);
-	glBindTexture(GL_TEXTURE_2D, *w_text);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-	//Sample RGB, multiply by previous texunit result
-	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);   //Modulate RGB with RGB
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-	//Sample ALPHA, multiply by previous texunit result -- maybe not necessary for this project
-	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);  //Modulate ALPHA with ALPHA
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-	*/
-}
-
-void Mesh::add_textures(GLubyte* stored_text, GLubyte* new_text, int size){
-    
-	for (int i = 0; i < size; ++i) {
-        if (stored_text[i] + new_text[i] < stored_text[i]){
-            stored_text[i] = 255;
-        } else {
-		    stored_text[i] += new_text[i];
-        }
-	}
-
-
-	/*
-	glActiveTexture(GL_TEXTURE0);
-    glClientActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, *stored_text); // TODO: need to pull texture from cumulative frame buffer...
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	//------------------------
-	glActiveTexture(GL_TEXTURE1);
-    glClientActiveTexture(GL_TEXTURE1);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, *new_text); // TODO: need to find the result of multiplying is. 
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);    //Add RGB with RGB
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, GL_PREVIOUS);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, GL_TEXTURE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-	//------------------------
-	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_ADD);    //Add ALPHA with ALPHA
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA, GL_PREVIOUS);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA, GL_TEXTURE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-	*/
-}
-
 
 /*
 void Mesh::compute_norm()
@@ -463,21 +348,19 @@ void Mesh::update() {
 }
 
 void Mesh::updateProjectionBlendWeights(){
+    /*
 	// Only process is the camera has changed
 	if (!m_camera->isUpdated()) {
 		return;
 	}
 	m_camera->resetUpdated();
-
-    // TODO: reset the weights using the View given by the camera
-    //m_viewObj->calculate_weights(m_camera->GetCenter());
+    */
 
     /*
     Vector3f d = m_camera->getViewingDir();
 
 	// Iterate through all of the faces. For each projection on each face, 
 	// Compute the weights based on camera viewing dir and the incoming
-	// 
     for(unsigned int index=0; index < faces.size(); index++) {
         vector<Tuple3u> face = faces[index];
         // Read verticies
@@ -489,7 +372,9 @@ void Mesh::updateProjectionBlendWeights(){
 }
 
 
-void Mesh::draw() {
+void Mesh::draw() {	
+        // reset the weights using the View given by the camera
+    m_viewObj->calculate_weights(m_camera->GetCenter());
     // Init the texture if it hasn't been done yet
     // This is a hack because texture loading can only be done after the window is created
     if ( !m_texture_init ) {
@@ -499,29 +384,8 @@ void Mesh::draw() {
         init_frame_buffer();
     } 
     glDepthFunc(GL_LEQUAL);
-
     glClearColor(0.0,0.0,0.0,1.0);
 
-    // For now, always draw projeciton 0 with texture
-    //glDisable(GL_BLEND);
-    //draw_mesh(true, 0);
-
-    //glEnable(GL_BLEND);
-    // Add
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    // Multiply
-    //glBlendFunc(GL_DST_COLOR, GL_ZERO );
-    // Subtract
-    //glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-
-    // Here we draw two meshes. If you have blending add enabled, 
-    // The color components of the meshes well add together
-    //draw_mesh(false, 0);
-    //draw_mesh(false, 0);
-    //draw_mesh(false, 2);
-    //draw_mesh(false, 2);
 
     // Multipass rendering
     multipass_render();
@@ -663,20 +527,20 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             glEnd();
             //glEnable (GL_LIGHTING);
         } else {
-            /*
-            Vector3f dir = m_camera->getViewingDir();
-            if(Vector3f::dot(dir, n) > 0) {
-                continue;
-            }
-            */
 
-            // Change this
-            float brightness = 0.5;
             // Don't change this (alpha blending is not what we want);
             float alpha = 1.0;
-			Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);
-			Vector4f c2 = Vector4f(brightness, brightness, brightness, alpha);
-			Vector4f c3 = Vector4f(brightness, brightness, brightness, alpha);
+			
+			float b1 = m_viewObj->v_weights[face[0][0]-1][projectionIndex];
+            float b2 = m_viewObj->v_weights[face[1][0]-1][projectionIndex];
+            float b3 = m_viewObj->v_weights[face[2][0]-1][projectionIndex];
+            Vector4f c1 = Vector4f(b1, b1, b1, alpha);
+            Vector4f c2 = Vector4f(b2, b2, b2, alpha);
+            Vector4f c3 = Vector4f(b3, b3, b3, alpha);
+            
+			//Vector4f c1 = Vector4f(brightness, brightness, brightness, alpha);
+			//Vector4f c2 = Vector4f(brightness, brightness, brightness, alpha);
+			//Vector4f c3 = Vector4f(brightness, brightness, brightness, alpha);
             glDisable (GL_LIGHTING);
             glBegin(GL_TRIANGLES);
             glColor4fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.

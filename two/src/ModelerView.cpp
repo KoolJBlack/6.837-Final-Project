@@ -38,14 +38,11 @@ void ModelerView::loadModel(int argc, char* argv[])
 	string meshFile = prefix + ".obj";
 	string textFile = prefix + ".bmp";
 
-	//TODO: we only want to load meshes, so get rid of the skeleton...
-	//model.load(skeletonFile.c_str(), meshFile.c_str(), attachmentsFile.c_str());
-	//m_mesh.load_mesh(meshFile.c_str());
+
 	m_mesh.load_mesh(prefix.c_str());
 
 	// Load projections
 	m_mesh.init_projections_with_textures(textFile);
-	//m_mesh.init_projections_with_textures(prefix.c_str());
 }
 
 ModelerView::~ModelerView()
