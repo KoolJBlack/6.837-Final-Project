@@ -100,7 +100,7 @@ struct Mesh {
 	void set_projection_weighted_texture(int projectionIndex);
 
 	// compute the normals if they are not given in the object file
-	void compute_norm();
+	void compute_norm(std::vector<Vector3f> v, std::vector<std::vector<Tuple3u>> t, std::vector<Vector3f> &vn);
 
 	// Update data
 	void update();

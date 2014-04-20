@@ -21,7 +21,6 @@ BlendShape& BlendShape::load_shape(const char* filename, BlendShape& shape){
 
     cerr << endl << "*** Mesh::load reading in file " << filename << " ***" << endl;
     
-
     Matrix4f scaling = Matrix4f::scaling(0.01,0.01,0.01);
 
     // load the OBJ file here
@@ -40,25 +39,12 @@ BlendShape& BlendShape::load_shape(const char* filename, BlendShape& shape){
             // Set the default color
             //vertexColors.push_back(Vector3f(1.0,1.0,1.0));
         } 
-		/*
-		else if (s == "vn") {// normals
-			Vector3f curr = Vector3f(0,0,0);
-			ss >> curr[0] >> curr[1] >> curr[2];
-			shape.b_normals.push_back(curr);
-		} */
-		
 		else {
             // ignore remaining tokens
         }
     } 
     // end while cin
-	cerr << "b_vertices size " << shape.b_vertices.size() << endl;
-    cerr << "v_normals size " << shape.b_normals.size() << endl;
 
-	if (shape.b_normals.size() == 0){ //compute the normals because we don't have that.
-		//TODO: fill this in.
-		cout << "ignoring normals" << endl;
-	}
 
 	return shape;
 }

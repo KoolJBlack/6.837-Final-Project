@@ -41,7 +41,6 @@ void Mesh::load_mesh( const char* filename )
 
     Matrix4f scaling = Matrix4f::scaling(0.01,0.01,0.01);
 
-
 	ifstream in1(objString.c_str());
     // load the BJ fOile here
     string line;
@@ -60,7 +59,7 @@ void Mesh::load_mesh( const char* filename )
             vertexColors.push_back(Vector3f(1.0,1.0,1.0));
         } else if (s == "f") {
             vector<Tuple3u> face;
-            string abc, def,ghi;
+            string abc, def, ghi;
             ss >> abc >> def >> ghi;
             // Parse face 1
             vector<string> f1 = split(abc, '/');
@@ -89,13 +88,16 @@ void Mesh::load_mesh( const char* filename )
                 i = atoi(f3[2].c_str());
             }
             face.push_back(Tuple3u(g, h, i));
-            // Add faces to fector
+            // Add faces to vector
             faces.push_back(face);
-        } else if (s == "vn") {// normals
+        } 
+		/*else if (s == "vn") {// normals
 			vertexNormals.push_back(Vector3f(0,0,0));
 			Vector3f& curr = vertexNormals.back();
 			ss >> curr[0] >> curr[1] >> curr[2];
-		} else if (s == "vt") {
+		} 
+		*/
+		else if (s == "vt") {
 			Vector2f texcoord;
 			ss>>texcoord[0];
 			ss>>texcoord[1];
@@ -106,6 +108,7 @@ void Mesh::load_mesh( const char* filename )
         }
     } 
     // end while cin
+
     cerr << "currentVertices size " << currentVertices.size() << endl;
     cerr << "textCoords size " << textureCoords.size() << endl;
     cerr << "faces size " << faces.size() << endl;
@@ -113,15 +116,16 @@ void Mesh::load_mesh( const char* filename )
 
 
 	if (vertexNormals.size() == 0){ //compute the normals because we don't have that.
-		//compute_norm();
-		cout << "need to compute the normals" << endl;
+		compute_norm(currentVertices, faces, vertexNormals);
+		cout << "computed normals" << endl; // TODO: hope that this works.
+		cout << "new vertex normals " << vertexNormals.size() << endl; 
+		//cout << "need to compute the normals" << endl;
 	}
 
     // Load the texture if possible
 	
 	// load the headshape as the default
 	HeadShape.b_vertices = currentVertices;
-	//HeadShape.b_faces = faces;
 	HeadShape.b_normals = vertexNormals;
 
     if (useShapes){
@@ -150,6 +154,20 @@ void Mesh::load_mesh( const char* filename )
 		m_blendShapes[10] = BlendShape::load_shape(REyebrowDown.c_str(), REyebrowDownShape);
 		
 		m_blendShapes[0] = HeadShape;
+
+		for (int k = 1; k < 11; k++){
+			BlendShape bb = m_blendShapes[k];
+			
+			cout << "b_vertices size " << bb.b_vertices.size() << endl;
+			cout << "b_faces size " << bb.b_faces.size() << endl;
+
+			compute_norm(bb.b_vertices, faces, bb.b_normals);
+			cout << "v_normals size " << bb.b_normals.size() << endl;
+
+			if (bb.b_normals.size() == 0){
+				cout << "ignoring normals" << endl;
+			}
+		}
 	}
 	else{
 		for(int i = 1; i < 11; i++){
@@ -336,40 +354,50 @@ void Mesh::set_projection_weighted_texture(int projectionIndex) {
     }
 }
 
-/*
-void Mesh::compute_norm()
+
+void Mesh::compute_norm(vector<Vector3f> v, vector<vector<Tuple3u>> t, vector<Vector3f> &vn)
 {
 	
-	vector<Vector3f> v = currentVertices;
-	vector<Tuple3u> t = faces;
+	//vector<Vector3f> v = currentVertices;
+	//vector<vector<Tuple3u>> t = faces;
 	vector<Vector3f> n;
 
 	if (SMOOTH){
 		n.resize(v.size());
 		for(unsigned int ii=0; ii<t.size(); ii++) {
-			Vector3f a = v[t[ii][1]] - v[t[ii][0]];
-			Vector3f b = v[t[ii][2]] - v[t[ii][0]];
+			Vector3f v0 = v[t[ii][0][0] - 1];
+			Vector3f v1 = v[t[ii][1][0] - 1];
+			Vector3f v2 = v[t[ii][2][0] - 1];
+			Vector3f a = v1 - v0;
+			Vector3f b = v2 - v1;
+			//Vector3f a = v[t[ii][1]] - v[t[ii][0]]; // a = v1 - v0
+			//Vector3f b = v[t[ii][2]] - v[t[ii][0]]; // b = v2 - v1
 			b=Vector3f::cross(a,b);
+			
 			for(int jj=0; jj<3; jj++) {
-				n[t[ii][jj]]+=b;
+				n[t[ii][jj][0] - 1] += (b / b.abs()); //sum the calculated normals, t[ii][jj][0] is the jj'th vertex at face ii
 			}
+			
 		}
-		for(unsigned int ii=0; ii<v.size(); ii++) {
-			n[ii] = n[ii]/ n[ii].abs();
+		for(unsigned int i=0; i<v.size(); i++) {
+			n[i] = n[i]/ n[i].abs();
 		}
-	}else{
+	}
+	
+	/*
+	else{ // I have no clue what the f is giong on here
 		n.resize(t.size());
 		for(unsigned int ii=0; ii<t.size(); ii++) {
-			Vector3f a = v[t[ii][1]] - v[t[ii][0]];
-			Vector3f b = v[t[ii][2]] - v[t[ii][0]];
+			Vector3f a = v[t[ii][1][0]] - v[t[ii][0][0]];
+			Vector3f b = v[t[ii][2][0]] - v[t[ii][0][0]];
 			b=Vector3f::cross(a,b);
 		  n[ii]=b.normalized();
 		}
-
-	}
-	vertexNormals = n;
+	}*/
+	//vertexNormals = n;
+	vn = n;
 }
-*/
+
 
 
 
@@ -495,7 +523,7 @@ void Mesh::draw_screen_quad() {
     glTexCoord2f(1, 1); glVertex3f(width, height, 0);
     glTexCoord2f(1, 0); glVertex3f(width, 0, 0);
     glEnd();
-    glEnable (GL_LIGHTING);
+    //glEnable (GL_LIGHTING); // TODO: not sure if this is what neesd to be turned off
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
@@ -531,11 +559,11 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
         Vector3f v2 = currentVertices[face[1][0] - 1];
         Vector3f v3 = currentVertices[face[2][0] - 1];
         // Calculate normal
-		// TODO: let's see if we can use the normals given to us -- issue: it gives weird lighting
-        Vector3f n = Vector3f::cross(v2 - v1, v3 - v1).normalized();
-		//Vector3f n1 = vertexNormals[face[0] - 1];
-		//Vector3f n2 = vertexNormals[face[1] - 1];
-		//Vector3f n3 = vertexNormals[face[2] - 1];
+		// if we use the normals given to us -- issue: it gives weird lighting
+        //Vector3f n = Vector3f::cross(v2 - v1, v3 - v1).normalized();
+		Vector3f n1 = vertexNormals[face[0][0] - 1];
+		Vector3f n2 = vertexNormals[face[1][0] - 1];
+		Vector3f n3 = vertexNormals[face[2][0] - 1];
 
         // Draw with or without texturing
         //if (m_texture_init) {
@@ -554,15 +582,15 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             //glDisable (GL_LIGHTING);
             glBegin(GL_TRIANGLES);
             // Vertex 1
-            glNormal3fv(n);
+            glNormal3fv(n1);
             glTexCoord2fv(t1);
             glVertex3fv(v1);
             // Vertex 2
-            glNormal3fv(n);
+            glNormal3fv(n2);
             glTexCoord2fv(t2);
             glVertex3fv(v2);
             // Vertext 3
-            glNormal3fv(n);
+            glNormal3fv(n3);
             glTexCoord2fv(t3);
             glVertex3fv(v3);
             glEnd();
@@ -586,13 +614,13 @@ void Mesh::draw_mesh(bool useTexture, int projectionIndex) {
             glDisable (GL_LIGHTING);
             glBegin(GL_TRIANGLES);
             glColor4fv(c1); // this is where the weights go for each vertex. we need to do this per texture per vertex.
-            glNormal3fv(n);
+            glNormal3fv(n1);
             glVertex3fv(v1);
             glColor4fv(c2);
-            glNormal3fv(n);
+            glNormal3fv(n2);
             glVertex3fv(v2);
             glColor4fv(c3);
-            glNormal3fv(n);
+            glNormal3fv(n3);
             glVertex3fv(v3);
             glEnd();
             glEnable (GL_LIGHTING);
