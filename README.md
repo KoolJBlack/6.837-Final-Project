@@ -3,4 +3,6 @@
 
 Image based rendering for face skeletal deformation. 
 
-Demonstration: https://www.youtube.com/watch?v=Ho0CHBZd-sU
+[Presentation](https://docs.google.com/presentation/d/1fzbfHwcFyoDem-UGUlICIsD6juHFXBNlT-hs9vGXWcg/edit?usp=sharing)
+
+[Demonstration Video](https://www.youtube.com/watch?v=Ho0CHBZd-sU)
